@@ -674,6 +674,7 @@ class VsCodeIde implements IDE {
 
   private getIdeSettingsSync(): IdeSettings {
     const settings = vscode.workspace.getConfiguration(EXTENSION_NAME);
+    const catalystSettings = vscode.workspace.getConfiguration("catalyst");
     const remoteConfigServerUrl = settings.get<string | undefined>(
       "remoteConfigServerUrl",
       undefined,
@@ -690,6 +691,26 @@ class VsCodeIde implements IDE {
         "pauseCodebaseIndexOnStart",
         false,
       ),
+      catalyst: {
+        budget: {
+          dailyLimit: catalystSettings.get<number>("budget.dailyLimit", 1.0),
+        },
+        models: {
+          preferredModel: catalystSettings.get<string>(
+            "models.preferredModel",
+            "Claude 3.5 Sonnet",
+          ),
+        },
+        context: {
+          enableDependencyDocs: catalystSettings.get<boolean>(
+            "context.enableDependencyDocs",
+            true,
+          ),
+        },
+        agent: {
+          mode: catalystSettings.get<string>("agent.mode", "Assistant"),
+        },
+      },
     };
     return ideSettings;
   }

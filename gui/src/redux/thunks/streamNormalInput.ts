@@ -190,6 +190,7 @@ export const streamNormalInput = createAsyncThunk<
           messages: compiledChatMessages,
           legacySlashCommandData,
           messageOptions: { precompiled: true },
+          mode: state.session.mode,
         },
         streamAborter.signal,
       );

@@ -28,6 +28,7 @@ import {
   FileSymbolMap,
   IdeSettings,
   LLMFullCompletionOptions,
+  MessageModes,
   MessageOption,
   ModelDescription,
   PromptLog,
@@ -233,6 +234,7 @@ export type ToCoreFromIdeOrWebviewProtocol = {
       completionOptions: LLMFullCompletionOptions;
       title: string;
       messageOptions?: MessageOption;
+      mode?: MessageModes;
       legacySlashCommandData?: {
         command: SlashCommandDescWithSource;
         input: string;

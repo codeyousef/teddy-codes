@@ -1,8 +1,9 @@
-import { getContinueRcPath, getTsConfigPath } from "core/util/paths";
+import { getTsConfigPath } from "core/util/paths";
 import { Telemetry } from "core/util/posthog";
 import * as vscode from "vscode";
 
 import { VsCodeExtension } from "../extension/VsCodeExtension";
+import { SecretManager } from "../util/SecretManager";
 import { getExtensionVersion, isUnsupportedPlatform } from "../util/util";
 
 import { GlobalContext } from "core/util/GlobalContext";
@@ -10,6 +11,9 @@ import { VsCodeContinueApi } from "./api";
 import setupInlineTips from "./InlineTipManager";
 
 export async function activateExtension(context: vscode.ExtensionContext) {
+  // Initialize SecretManager
+  SecretManager.getInstance(context);
+
   const platformCheck = isUnsupportedPlatform();
   const globalContext = new GlobalContext();
   const hasShownUnsupportedPlatformWarning = globalContext.get(
@@ -37,12 +41,21 @@ export async function activateExtension(context: vscode.ExtensionContext) {
 
   // Add necessary files
   getTsConfigPath();
-  getContinueRcPath();
+  // Catalyst: Disable .continuerc creation
+  // getContinueRcPath();
 
   // Register commands and providers
   setupInlineTips(context);
 
   const vscodeExtension = new VsCodeExtension(context);
+
+  // Feature 2.1: Project Constitution File Watcher
+  const watcher = vscode.workspace.createFileSystemWatcher("**/CATALYST.md");
+  watcher.onDidChange(() => {
+    // Trigger context refresh
+    vscode.commands.executeCommand("continue.loadRecentChat"); // Or a more specific refresh command if available
+  });
+  context.subscriptions.push(watcher);
 
   // Load Continue configuration
   if (!context.globalState.get("hasBeenInstalled")) {
@@ -82,6 +95,23 @@ export async function activateExtension(context: vscode.ExtensionContext) {
   const continuePublicApi = {
     registerCustomContextProvider: api.registerCustomContextProvider.bind(api),
   };
+
+  // Catalyst: Register Secret Management Command
+  context.subscriptions.push(
+    vscode.commands.registerCommand("catalyst.setAnthropicApiKey", async () => {
+      const apiKey = await vscode.window.showInputBox({
+        prompt: "Enter your Anthropic API Key",
+        password: true,
+        ignoreFocusOut: true,
+      });
+      if (apiKey) {
+        await SecretManager.getInstance().store("anthropic_api_key", apiKey);
+        vscode.window.showInformationMessage(
+          "Anthropic API Key saved securely.",
+        );
+      }
+    }),
+  );
 
   // 'export' public api-surface
   // or entire extension for testing

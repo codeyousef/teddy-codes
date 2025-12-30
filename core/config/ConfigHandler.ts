@@ -1,4 +1,8 @@
-import { ConfigResult, ConfigValidationError } from "@continuedev/config-yaml";
+import {
+  ConfigResult,
+  ConfigValidationError,
+  ModelRole,
+} from "@continuedev/config-yaml";
 
 import { ControlPlaneClient } from "../control-plane/client.js";
 import {
@@ -534,6 +538,61 @@ export class ConfigHandler {
       errors = [],
       configLoadInterrupted,
     } = await this.currentProfile.reloadConfig(this.additionalContextProviders);
+
+    // Feature 1.1: Dynamic Model Configuration & Safety Patch
+    if (config) {
+      const roles = Object.keys(config.modelsByRole) as ModelRole[];
+      for (const role of roles) {
+        const models = config.modelsByRole[role];
+        if (models) {
+          for (const model of models) {
+            if (model.model.match(/^claude-3-(5|7)-(sonnet|opus)/)) {
+              // Force contextLength
+              if ("_contextLength" in model) {
+                (model as any)._contextLength = 190000;
+              }
+
+              // Force maxTokens
+              model.completionOptions = {
+                ...model.completionOptions,
+                maxTokens: 8192,
+              };
+
+              // Inject capabilities
+              if (!model.capabilities) {
+                model.capabilities = {};
+              }
+              model.capabilities.tools = true;
+
+              // Inject caching
+              if (!model.cacheBehavior) {
+                model.cacheBehavior = {};
+              }
+              model.cacheBehavior.cacheSystemMessage = true;
+              model.cacheBehavior.cacheConversation = true;
+            }
+          }
+        }
+      }
+
+      // Feature 1.3: Native VS Code Settings Integration
+      const ideSettings = await this.ide.getIdeSettings();
+      if (ideSettings.catalyst) {
+        const preferredModelTitle = ideSettings.catalyst.models.preferredModel;
+        if (preferredModelTitle && preferredModelTitle !== "Auto-Route") {
+          const chatModels = config.modelsByRole.chat || [];
+          const match = chatModels.find(
+            (m) =>
+              m.title === preferredModelTitle ||
+              m.model === preferredModelTitle,
+          );
+
+          if (match) {
+            config.selectedModelByRole.chat = match;
+          }
+        }
+      }
+    }
 
     if (injectErrors) {
       errors.unshift(...injectErrors);

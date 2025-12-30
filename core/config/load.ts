@@ -33,6 +33,11 @@ import {
   SlashCommandWithSource,
 } from "..";
 import { getLegacyBuiltInSlashCommandFromDescription } from "../commands/slash/built-in-legacy";
+import { ImplementCommand } from "../commands/slash/catalyst/ImplementCommand";
+import { PlanCommand } from "../commands/slash/catalyst/PlanCommand";
+import { SpecifyCommand } from "../commands/slash/catalyst/SpecifyCommand";
+import { TasksCommand } from "../commands/slash/catalyst/TasksCommand";
+import { TddCommand } from "../commands/slash/catalyst/TddCommand";
 import { convertCustomCommandToSlashCommand } from "../commands/slash/customSlashCommand";
 import { slashCommandFromPromptFile } from "../commands/slash/promptFileSlashCommand";
 import { MCPManagerSingleton } from "../context/mcp/MCPManagerSingleton";
@@ -174,6 +179,22 @@ async function serializedToIntermediateConfig(
 ): Promise<Config> {
   // DEPRECATED - load custom slash commands
   const slashCommands: SlashCommandWithSource[] = [];
+
+  // Catalyst Commands
+  const catalystCommands = [
+    SpecifyCommand,
+    PlanCommand,
+    TasksCommand,
+    ImplementCommand,
+    TddCommand,
+  ];
+  for (const cmd of catalystCommands) {
+    slashCommands.push({
+      ...cmd,
+      source: "catalyst",
+    });
+  }
+
   for (const command of initial.slashCommands || []) {
     const newCommand = getLegacyBuiltInSlashCommandFromDescription(command);
     if (newCommand) {

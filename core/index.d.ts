@@ -487,7 +487,13 @@ export interface PromptLog {
   completion: string;
 }
 
-export type MessageModes = "chat" | "agent" | "plan" | "background";
+export type MessageModes =
+  | "chat"
+  | "agent"
+  | "plan"
+  | "background"
+  | "assistant"
+  | "autonomous";
 
 export type ToolStatus =
   | "generating" // Tool call arguments are being streamed from the LLM
@@ -797,6 +803,12 @@ export interface IdeSettings {
   userToken: string;
   continueTestEnvironment: "none" | "production" | "staging" | "local";
   pauseCodebaseIndexOnStart: boolean;
+  catalyst?: {
+    budget: { dailyLimit: number };
+    models: { preferredModel: string };
+    context: { enableDependencyDocs: boolean };
+    agent: { mode: string };
+  };
 }
 
 export interface FileStats {
@@ -957,6 +969,7 @@ export type SlashCommandSource =
   | "json-custom-command"
   | "config-ts-slash-command"
   | "yaml-prompt-block"
+  | "catalyst"
   | "mcp-prompt"
   | "prompt-file-v1"
   | "prompt-file-v2"

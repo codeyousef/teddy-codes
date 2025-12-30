@@ -499,6 +499,55 @@ function autodetectPromptTemplates(
   return templates;
 }
 
+import { fetchwithRequestOptions } from "@continuedev/fetch";
+
+export async function fetchProviderModels(
+  provider: string,
+  apiKey?: string,
+): Promise<string[]> {
+  // Catalyst Phase 3: Dynamic Model Fetching
+  // This function queries the provider API to get the list of available models.
+  // Currently implemented for Anthropic.
+
+  if (provider === "anthropic") {
+    try {
+      // Note: Anthropic doesn't have a public models list endpoint that is easily accessible without auth or specific headers
+      // But for the sake of the spec, we simulate or implement what's possible.
+      // Actually, Anthropic DOES have a models endpoint now: https://api.anthropic.com/v1/models
+
+      if (!apiKey) return [];
+
+      const response = await fetchwithRequestOptions(
+        "https://api.anthropic.com/v1/models",
+        {
+          method: "GET",
+          headers: {
+            "x-api-key": apiKey,
+            "anthropic-version": "2023-06-01",
+          },
+        },
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        // data.data is an array of model objects { id: "...", ... }
+        return data.data.map((m: any) => m.id);
+      }
+    } catch (e) {
+      console.error("Failed to fetch Anthropic models:", e);
+    }
+
+    // Fallback to known 2025 models if fetch fails
+    return [
+      "claude-3-5-sonnet-20241022",
+      "claude-3-5-haiku-20241022",
+      "claude-3-opus-20240229",
+    ];
+  }
+
+  return [];
+}
+
 export {
   autodetectPromptTemplates,
   autodetectTemplateFunction,

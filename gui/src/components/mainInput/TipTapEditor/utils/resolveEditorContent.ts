@@ -145,7 +145,9 @@ async function gatherContextItems({
   );
   let contextItems: ContextItemWithId[] = [];
 
-  const isInAgentMode = getState().session.mode === "agent";
+  const mode = getState().session.mode;
+  const isInAgentMode =
+    mode === "agent" || mode === "assistant" || mode === "autonomous";
 
   // Process context item attributes
   for (const item of deduplicatedInputs) {

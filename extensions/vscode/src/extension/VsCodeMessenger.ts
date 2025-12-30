@@ -23,6 +23,7 @@ import {
 import * as vscode from "vscode";
 
 import { ApplyManager } from "../apply";
+import { CostStatusBar } from "../cost/CostStatusBar";
 import { VerticalDiffManager } from "../diff/vertical/manager";
 import { addCurrentSelectionToEdit } from "../quickEdit/AddCurrentSelection";
 import EditDecorationManager from "../quickEdit/EditDecorationManager";
@@ -93,6 +94,13 @@ export class VsCodeMessenger {
     private readonly context: vscode.ExtensionContext,
     private readonly vsCodeExtension: VsCodeExtension,
   ) {
+    // Catalyst Cost Status Bar
+    const costStatusBar = new CostStatusBar();
+    context.subscriptions.push(costStatusBar);
+    this.onCore("catalyst/costUpdate", (msg) => {
+      costStatusBar.updateCost(msg.data.cost);
+    });
+
     /** WEBVIEW ONLY LISTENERS **/
     this.onWebview("showFile", (msg) => {
       this.ide.openFile(msg.data.filepath);

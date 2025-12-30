@@ -1,8 +1,10 @@
 import {
   ChatBubbleLeftIcon,
+  CpuChipIcon,
   RocketLaunchIcon,
   SparklesIcon,
   SwatchIcon,
+  UserCircleIcon,
 } from "@heroicons/react/24/outline";
 import { MessageModes } from "core";
 
@@ -24,5 +26,9 @@ export function ModeIcon({
       return <ChatBubbleLeftIcon className={className} />;
     case "background":
       return <RocketLaunchIcon className={className} />;
+    case "assistant":
+      return <UserCircleIcon className={className} />;
+    case "autonomous":
+      return <CpuChipIcon className={className} />;
   }
 }

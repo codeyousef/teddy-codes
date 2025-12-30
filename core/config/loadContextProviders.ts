@@ -4,6 +4,7 @@ import {
 } from "@continuedev/config-yaml";
 import { IContextProvider, IdeType } from "..";
 import { contextProviderClassFromName } from "../context/providers";
+import { CatalystContextProvider } from "../context/providers/CatalystContextProvider";
 import CurrentFileContextProvider from "../context/providers/CurrentFileContextProvider";
 import DiffContextProvider from "../context/providers/DiffContextProvider";
 import DocsContextProvider from "../context/providers/DocsContextProvider";
@@ -37,6 +38,7 @@ export function loadConfigContextProviders(
     new TerminalContextProvider({}),
     new ProblemsContextProvider({}),
     new RulesContextProvider({}),
+    new CatalystContextProvider({}),
   ];
 
   // Add from config

@@ -45,6 +45,9 @@ export class PauseToken {
   }
 }
 
+import { DependencyParser } from "./DependencyParser.js";
+import { DocFetcher } from "./DocFetcher.js";
+
 export class CodebaseIndexer {
   /**
    * We batch for two reasons:
@@ -208,7 +211,39 @@ export class CodebaseIndexer {
     }
 
     this.builtIndexes = indexes;
+
+    // Feature 2.2: Dependency Intelligence Engine
+    // This is a simplified integration. Ideally, this should be its own CodebaseIndex or a separate process.
+    // For now, we trigger it here if enabled.
+    // ideSettings is already defined above
+    if (ideSettings.catalyst?.context?.enableDependencyDocs) {
+      this.indexDependencies();
+    }
+
     return indexes;
+  }
+
+  private async indexDependencies() {
+    try {
+      const workspaceDirs = await this.ide.getWorkspaceDirs();
+      const dependencies = await DependencyParser.scanWorkspace(workspaceDirs);
+
+      for (const dep of dependencies) {
+        // Check if already indexed (omitted for brevity, would need a DB check)
+        const docs = await DocFetcher.fetchDocs(
+          dep.name,
+          `https://npmjs.com/package/${dep.name}`,
+        ); // Simplified URL construction
+        if (docs) {
+          // Store in Vector DB (Feature 2.3 integration point)
+          // const vectorIndex = this.builtIndexes.find(i => i.artifactId.startsWith("vectordb"));
+          // if (vectorIndex) { ... }
+          console.log(`Fetched docs for ${dep.name}`);
+        }
+      }
+    } catch (e) {
+      console.error("Error indexing dependencies:", e);
+    }
   }
 
   private totalIndexOps(results: RefreshIndexResults): number {

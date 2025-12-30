@@ -7,12 +7,7 @@ import { EXTENSION_NAME, getControlPlaneEnv } from "core/control-plane/env";
 import { Core } from "core/core";
 import { FromCoreProtocol, ToCoreProtocol } from "core/protocol";
 import { InProcessMessenger } from "core/protocol/messenger";
-import {
-  getConfigJsonPath,
-  getConfigTsPath,
-  getConfigYamlPath,
-  getContinueGlobalPath,
-} from "core/util/paths";
+import { getConfigTsPath, getContinueGlobalPath } from "core/util/paths";
 import { v4 as uuidv4 } from "uuid";
 import * as vscode from "vscode";
 
@@ -439,6 +434,8 @@ export class VsCodeExtension {
 
     // Listen for file saving - use global file watcher so that changes
     // from outside the window are also caught
+    // Catalyst: Disable config.json/yaml watching to enforce VS Code settings
+    /*
     fs.watchFile(getConfigJsonPath(), { interval: 1000 }, async (stats) => {
       if (stats.size === 0) {
         return;
@@ -460,6 +457,7 @@ export class VsCodeExtension {
         );
       },
     );
+    */
 
     fs.watchFile(getConfigTsPath(), { interval: 1000 }, (stats) => {
       if (stats.size === 0) {

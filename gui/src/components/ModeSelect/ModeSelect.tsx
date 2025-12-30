@@ -45,6 +45,10 @@ export function ModeSelect() {
     } else if (mode === "plan") {
       dispatch(setMode("agent"));
     } else if (mode === "agent") {
+      dispatch(setMode("assistant"));
+    } else if (mode === "assistant") {
+      dispatch(setMode("autonomous"));
+    } else if (mode === "autonomous") {
       // Skip background mode if local agent is selected
       dispatch(setMode(isLocalAgent ? "chat" : "background"));
     } else {
@@ -117,7 +121,11 @@ export function ModeSelect() {
                 ? "Agent"
                 : mode === "background"
                   ? "Background"
-                  : "Plan"}
+                  : mode === "assistant"
+                    ? "Assistant"
+                    : mode === "autonomous"
+                      ? "Autonomous"
+                      : "Plan"}
           </span>
           <ChevronDownIcon
             className="h-2 w-2 flex-shrink-0"
@@ -183,6 +191,44 @@ export function ModeSelect() {
             {!isGoodAtAgentMode && notGreatAtAgent("Agent")}
             <CheckIcon
               className={`ml-auto h-3 w-3 ${mode === "agent" ? "" : "opacity-0"}`}
+            />
+          </ListboxOption>
+
+          <ListboxOption value="assistant" className={"gap-1"}>
+            <div className="flex flex-row items-center gap-1.5">
+              <ModeIcon mode="assistant" />
+              <span className="">Assistant</span>
+              <ToolTip
+                style={{
+                  zIndex: 200001,
+                }}
+                content="Human-in-the-loop assistance"
+              >
+                <InformationCircleIcon className="h-2.5 w-2.5 flex-shrink-0" />
+              </ToolTip>
+            </div>
+            {!isGoodAtAgentMode && notGreatAtAgent("Assistant")}
+            <CheckIcon
+              className={`ml-auto h-3 w-3 ${mode === "assistant" ? "" : "opacity-0"}`}
+            />
+          </ListboxOption>
+
+          <ListboxOption value="autonomous" className={"gap-1"}>
+            <div className="flex flex-row items-center gap-1.5">
+              <ModeIcon mode="autonomous" />
+              <span className="">Autonomous</span>
+              <ToolTip
+                style={{
+                  zIndex: 200001,
+                }}
+                content="Fully autonomous execution"
+              >
+                <InformationCircleIcon className="h-2.5 w-2.5 flex-shrink-0" />
+              </ToolTip>
+            </div>
+            {!isGoodAtAgentMode && notGreatAtAgent("Autonomous")}
+            <CheckIcon
+              className={`ml-auto h-3 w-3 ${mode === "autonomous" ? "" : "opacity-0"}`}
             />
           </ListboxOption>
 

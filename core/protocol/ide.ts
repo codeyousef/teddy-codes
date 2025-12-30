@@ -94,6 +94,7 @@ export type ToIdeFromWebviewOrCoreProtocol = {
   logoutOfControlPlane: [undefined, void];
   reportError: [any, void];
   closeSidebar: [undefined, void];
+  "catalyst/costUpdate": [{ cost: number }, void];
 };
 
 export type ToWebviewOrCoreFromIdeProtocol = {

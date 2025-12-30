@@ -173,7 +173,7 @@ function countToolsTokens(tools: Tool[], modelName: string): number {
   return numTokens + 12;
 }
 
-function countChatMessageTokens(
+export function countChatMessageTokens(
   modelName: string,
   chatMessage: ChatMessage,
 ): number {

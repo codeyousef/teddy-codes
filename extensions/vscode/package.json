@@ -98,6 +98,35 @@
           "default": true,
           "description": "Show inline suggestion to use the Continue keyboard shortcuts (e.g. \"Cmd/Ctrl L to select code, Cmd/Ctrl I to edit\")."
         },
+        "catalyst.budget.dailyLimit": {
+          "type": "number",
+          "default": 1,
+          "description": "Daily budget limit for Catalyst in USD."
+        },
+        "catalyst.models.preferredModel": {
+          "type": "string",
+          "enum": [
+            "Claude 3.5 Sonnet",
+            "Claude 3.7 Opus",
+            "Auto-Route"
+          ],
+          "default": "Claude 3.5 Sonnet",
+          "description": "Preferred model for Catalyst."
+        },
+        "catalyst.context.enableDependencyDocs": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable automatic dependency documentation fetching."
+        },
+        "catalyst.agent.mode": {
+          "type": "string",
+          "enum": [
+            "Assistant",
+            "Autonomous"
+          ],
+          "default": "Assistant",
+          "description": "Agent mode for Catalyst."
+        },
         "continue.disableQuickFix": {
           "type": "boolean",
           "default": false,

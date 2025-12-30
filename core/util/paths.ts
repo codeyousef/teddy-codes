@@ -9,7 +9,6 @@ import * as JSONC from "comment-json";
 import dotenv from "dotenv";
 
 import { IdeType, SerializedContinueConfig } from "../";
-import { defaultConfig } from "../config/default";
 import Types from "../config/types";
 
 dotenv.config();
@@ -118,6 +117,8 @@ export function getConfigJsonPath(): string {
 
 export function getConfigYamlPath(ideType?: IdeType): string {
   const p = path.join(getContinueGlobalPath(), "config.yaml");
+  // Catalyst: Disable auto-creation of config.yaml to enforce VS Code settings
+  /*
   if (!fs.existsSync(p) && !fs.existsSync(getConfigJsonPath())) {
     if (ideType === "jetbrains") {
       // https://github.com/continuedev/continue/pull/7224
@@ -129,6 +130,7 @@ export function getConfigYamlPath(ideType?: IdeType): string {
     }
     setConfigFilePermissions(p);
   }
+  */
   return p;
 }
 
