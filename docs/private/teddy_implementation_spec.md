@@ -14,7 +14,6 @@ Core Philosophy: Hard-to-fail, local-first reasoning engine with automated conte
 
 1. **Manifest Update:** Rename extension to `teddy.codes` in `package.json`. Update icon and description.
 2. **Configure Existing Mode Selector:**
-
    - **Target Component:** Locate the existing `ModeSelector` component (likely in the Chat Panel or Status Bar).
    - **Inject Options:** Add the following modes to the existing dropdown list:
      - `Autonomous (Spec-Driven)`
@@ -33,13 +32,11 @@ Core Philosophy: Hard-to-fail, local-first reasoning engine with automated conte
 **Implementation Logic:**
 
 1. **Project Detection:** On workspace load, check:
-
    - Is there a `.git` folder?
    - Are there > 5 source files?
    - **Decision:** If yes AND `~/.teddy/indices/{hash}` is missing -> Trigger "Empty State" UI.
 
 2. **Empty State / Welcome UI:**
-
    - **Design:** Render a clean HTML card in the Chat Window (Webview).
    - **Content:**
      - "🐻 **Teddy found an existing codebase.**"
@@ -47,7 +44,6 @@ Core Philosophy: Hard-to-fail, local-first reasoning engine with automated conte
      - **Action Element:** A prominent, clickable link/button: `[ 🚀 Index Codebase & Generate TEDDY.md ]`.
 
 3. **Action Handler:**
-
    - **Step A (Indexing):** Trigger Feature 2.1 (Repo Map) and Feature 2.2 (Vectorization).
    - **Step B (Constitution):** Check for `TEDDY.md` (formerly `CATALYST.md`).
      - If missing: Analyze `package.json` / `Cargo.toml` -> Detect Stack -> Generate `TEDDY.md` template with best practices (Architecture, Styling, Testing).
@@ -64,13 +60,11 @@ Core Philosophy: Hard-to-fail, local-first reasoning engine with automated conte
 
 1. **Tree Generator:** Walk file tree (ignore `.gitignore`).
 2. **Signature Extraction (Tree-sitter):**
-
    - Parse every source file.
    - Extract: Class names, Public Function signatures, Docstrings (first line only).
    - **Format:** `src/auth.ts: class Auth { login(user, pass), logout() }`
 
 3. **Compression & Ranking:**
-
    - If total token count > 2000:
    - Run **PageRank** based on import graph (files imported often = higher rank).
    - Keep top 2000 tokens of high-rank files.
@@ -85,14 +79,12 @@ Core Philosophy: Hard-to-fail, local-first reasoning engine with automated conte
 
 1. **Interception:** Before sending ANY user prompt to the LLM.
 2. **Query Analysis:**
-
    - Extract keywords (e.g., "React", "Auth", "Table component").
    - Check **Qdrant** (Vector DB) for:
      - `type: codebase` (User's code chunks).
      - `type: dependency` (Library docs from `llm.txt`).
 
 3. **Relevance Threshold:**
-
    - Only inject chunks with Cosine Similarity > 0.82.
    - **Limit:** Max 3 chunks (approx 1000 tokens) to save budget.
 
@@ -105,19 +97,16 @@ Core Philosophy: Hard-to-fail, local-first reasoning engine with automated conte
 **Implementation Logic:**
 
 1. **Diagnostic Observer:**
-
    - Hook into `vscode.languages.getDiagnostics(uri)`.
    - Monitor the `activeTextEditor` and any files modified by the Agent in the current session.
 
 2. **Context Injection Strategy:**
-
    - **Pre-Commit Check:** Before the Agent marks a task as "Done" or runs a test, it must query the Diagnostic collection for the specific file range it modified.
    - **Auto-Fix Trigger:** If `Severity.Error` or `Severity.Warning` is detected:
      - **Pause Execution:** Do not proceed to the next task.
      - **Feedback Loop:** Feed the error context back to the LLM: _"LSP reports an error on line 15: 'Property does not exist on type...'. Fix this before proceeding."_
 
 3. **UI Feedback:**
-
    - Show "🚨 LSP Error Detected" -> "🛠️ Auto-Fixing..." in the status indicator to let the user know Teddy caught a bug.
 
 ## Phase 3: The Modes (Workflow Engines)
@@ -130,19 +119,16 @@ Core Philosophy: Hard-to-fail, local-first reasoning engine with automated conte
 
 1. **Trigger:** User selects "Autonomous" dropdown -> types a high-level request (e.g., "Build a login page").
 2. **Step 1: Specification (Internal):**
-
    - **Agent Action:** "I need to write a spec for this first."
    - **LLM Task:** Generate `spec.md` (Requirements).
    - **UI:** Show "📝 Writing Spec..." -> Display diff -> User Approves.
 
 3. **Step 2: Planning (Internal):**
-
    - **Context:** `spec.md` + `Repo Map` (Feature 2.1).
    - **LLM Task:** Generate `plan.md` (Files to create/edit).
    - **UI:** Show "🧠 Planning Architecture..." -> Display plan -> User Approves.
 
 4. **Step 3: Execution (Internal Loop):**
-
    - **Loop:** Parse `plan.md` tasks -> For each task:
      - Fetch relevant files.
      - Generate Code.
@@ -159,20 +145,17 @@ Core Philosophy: Hard-to-fail, local-first reasoning engine with automated conte
 1. **Trigger:** User selects "TDD" dropdown -> types request.
 2. **Constraint:** System Prompt appended: "You are in TDD Mode. YOU MUST WRITE A FAILING TEST FIRST. DO NOT IMPLEMENT LOGIC YET."
 3. **Step 1: Test Gen:**
-
    - LLM generates `*.test.ts`.
    - **LSP Check (Feature 2.3):** Ensure test file has no syntax errors.
    - System runs test -> Confirms Failure (Red 🔴).
 
 4. **Step 2: Implementation:**
-
    - System Prompt updates: "Test failed as expected. Now write the MINIMAL code to pass the test."
    - LLM generates implementation.
    - **LSP Check (Feature 2.3):** Ensure implementation has no syntax/type errors.
    - System runs test -> Confirms Success (Green 🟢).
 
 5. **Step 3: Refactor:**
-
    - Optional prompt: "Refactor the code while keeping tests green."
 
 ## Phase 4: Hardware Safety (The Guardrails)
@@ -185,7 +168,6 @@ Core Philosophy: Hard-to-fail, local-first reasoning engine with automated conte
 
 1. **VRAM Monitor:** Check available VRAM on startup.
 2. **Strict Context Cap:**
-
    - If model == `deepseek-r1:32b` (Local): Hard cap context to **8,192 tokens**.
    - **Budgeting:**
      - Active File: 40% (3.2k)

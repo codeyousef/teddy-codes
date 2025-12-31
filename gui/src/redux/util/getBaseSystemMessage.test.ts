@@ -1,4 +1,4 @@
-import { ModelDescription, Tool } from "core";
+import type { ModelDescription, Tool } from "core";
 import {
   DEFAULT_AGENT_SYSTEM_MESSAGE,
   DEFAULT_CHAT_SYSTEM_MESSAGE,

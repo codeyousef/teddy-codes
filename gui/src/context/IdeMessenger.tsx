@@ -3,9 +3,8 @@ import type {
   FromWebviewProtocol,
   ToCoreProtocol,
   ToWebviewProtocol,
-} from "core/protocol";
-import type { Message } from "core/protocol/messenger";
-import { MessageIde } from "core/protocol/messenger/messageIde";
+} from "core/protocol/index";
+import type { Message } from "core/protocol/messenger/index";
 import type {
   GeneratorReturnType,
   GeneratorYieldType,
@@ -16,6 +15,7 @@ import type {
 import { createContext } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { isJetBrains } from "../util";
+import { MessageIde } from "./MessageIde";
 
 interface vscode {
   postMessage(message: any): vscode;

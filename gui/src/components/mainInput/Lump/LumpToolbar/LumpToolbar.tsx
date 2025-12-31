@@ -1,4 +1,4 @@
-import type { BuiltInToolNames } from "core/tools/builtIn";
+import { BuiltInToolNames } from "core/tools/builtIn";
 import { useContext, useEffect } from "react";
 import { IdeMessengerContext } from "../../../../context/IdeMessenger";
 import { useAppDispatch, useAppSelector } from "../../../../redux/hooks";

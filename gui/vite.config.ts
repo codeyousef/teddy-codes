@@ -14,12 +14,17 @@ export default defineConfig({
       project: "continue",
     }),
   ],
+  resolve: {
+    alias: {
+      // Stub out Node.js-specific fetch package for browser builds
+      "@continuedev/fetch": resolve(__dirname, "src/util/fetchStub.ts"),
+    },
+  },
   build: {
     sourcemap: true,
 
     // Change the output .js filename to not include a hash
     rollupOptions: {
-      external: ["@continuedev/fetch", "fetch-blob", "node-fetch"],
       input: {
         index: resolve(__dirname, "index.html"),
         indexConsole: resolve(__dirname, "indexConsole.html"),

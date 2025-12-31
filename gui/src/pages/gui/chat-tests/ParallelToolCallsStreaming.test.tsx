@@ -1,9 +1,9 @@
 import { act } from "@testing-library/react";
-import { ChatMessage } from "core";
+import type { ChatMessage } from "core";
+import { updateConfig } from "../../../redux/slices/configSlice";
 import { renderWithProviders } from "../../../util/test/render";
 import { sendInputWithMockedResponse } from "../../../util/test/utils";
 import { Chat } from "../Chat";
-import { updateConfig } from "../../../redux/slices/configSlice";
 
 describe("Parallel Tool Calls - Streaming", () => {
   test("should handle streaming deltas for multiple tool calls", async () => {

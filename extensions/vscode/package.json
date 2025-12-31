@@ -83,6 +83,19 @@
         "path": "./media/prompt.tmLanguage.json"
       }
     ],
+    "authentication": [
+      {
+        "id": "continue",
+        "label": "Continue"
+      }
+    ],
+    "chatParticipants": [
+      {
+        "id": "claude-code",
+        "name": "claude",
+        "description": "Claude Code"
+      }
+    ],
     "configuration": {
       "title": "Continue",
       "properties": {

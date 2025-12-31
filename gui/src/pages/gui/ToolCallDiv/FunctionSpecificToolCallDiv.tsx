@@ -1,5 +1,5 @@
 import type { ToolCallState } from "core";
-import type { BuiltInToolNames } from "core/tools/builtIn";
+import { BuiltInToolNames } from "core/tools/builtIn";
 import type { EditOperation } from "core/tools/definitions/multiEdit";
 import { CreateFile } from "./CreateFile";
 import { EditFile } from "./EditFile";

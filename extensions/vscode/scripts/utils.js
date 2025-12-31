@@ -1,8 +1,29 @@
 const fs = require("fs");
 const path = require("path");
 
-const ncp = require("ncp").ncp;
-const { rimrafSync } = require("rimraf");
+// const ncp = require("ncp").ncp;
+// const { rimrafSync } = require("rimraf");
+function rimrafSync(p) {
+  if (fs.existsSync(p)) {
+    fs.rmSync(p, { recursive: true, force: true });
+  }
+}
+
+function ncp(source, dest, options, callback) {
+  if (typeof options === "function") {
+    callback = options;
+    options = {};
+  }
+  try {
+    fs.cpSync(source, dest, {
+      recursive: true,
+      dereference: options.dereference,
+    });
+    callback(null);
+  } catch (err) {
+    callback(err);
+  }
+}
 
 const { execCmdSync } = require("../../../scripts/util/index");
 

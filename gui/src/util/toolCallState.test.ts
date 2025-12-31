@@ -1,4 +1,4 @@
-import { ToolCallDelta, ToolCallState } from "core";
+import type { ToolCallDelta, ToolCallState } from "core";
 import { addToolCallDeltaToState } from "./toolCallState";
 
 describe("addToolCallDeltaToState", () => {

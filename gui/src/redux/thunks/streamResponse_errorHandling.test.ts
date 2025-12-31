@@ -1,5 +1,5 @@
 import { JSONContent } from "@tiptap/core";
-import { InputModifiers } from "core";
+import type { InputModifiers } from "core";
 import { describe, expect, it, vi } from "vitest";
 import { createMockStore, getEmptyRootState } from "../../util/test/mockStore";
 import { streamResponseThunk } from "./streamResponse";

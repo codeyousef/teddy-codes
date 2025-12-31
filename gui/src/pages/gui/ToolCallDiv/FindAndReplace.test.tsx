@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { ApplyState } from "core";
-import { EditOperation } from "core/tools/definitions/multiEdit";
+import type { ApplyState } from "core";
+import type { EditOperation } from "core/tools/definitions/multiEdit";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { FindAndReplaceDisplay } from "./FindAndReplace";
 

@@ -1,7 +1,7 @@
 import { screen, waitFor } from "@testing-library/dom";
 import { act } from "@testing-library/react";
 import { Editor } from "@tiptap/core";
-import { ChatMessage } from "core";
+import type { ChatMessage } from "core";
 import { MockIdeMessenger } from "../../context/MockIdeMessenger";
 
 function logDomText() {

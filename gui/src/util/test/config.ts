@@ -1,6 +1,6 @@
 import { EnhancedStore } from "@reduxjs/toolkit";
-import { BrowserSerializedContinueConfig, ModelDescription } from "core";
-import { SerializedOrgWithProfiles } from "core/config/ProfileLifecycleManager";
+import type { BrowserSerializedContinueConfig, ModelDescription } from "core";
+import type { SerializedOrgWithProfiles } from "core/config/ProfileLifecycleManager";
 import { copyOf } from "core/util";
 import { MockIdeMessenger } from "../../context/MockIdeMessenger";
 

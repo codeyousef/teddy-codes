@@ -87,3 +87,25 @@ export function isPrerelease() {
 export function isLocalProfile(profile: ProfileDescription): boolean {
   return profile.profileType === "local";
 }
+
+export function deduplicateArray<T>(
+  array: T[],
+  equal: (a: T, b: T) => boolean,
+): T[] {
+  const result: T[] = [];
+
+  for (const item of array) {
+    if (!result.some((existingItem) => equal(existingItem, item))) {
+      result.push(item);
+    }
+  }
+
+  return result;
+}
+
+export function splitCamelCaseAndNonAlphaNumeric(value: string) {
+  return value
+    .split(/(?<=[a-z0-9])(?=[A-Z])|[^a-zA-Z0-9]/)
+    .filter((t) => t.length > 0)
+    .map((t) => t.toLowerCase());
+}

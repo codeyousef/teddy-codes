@@ -1,6 +1,10 @@
-import { Position } from "shiki";
 import { DiffLine } from "../..";
 import { myersDiff } from "../../diff/myers";
+
+interface Position {
+  line: number;
+  character: number;
+}
 
 /**
  * Given a diff of two editable regions, get the offset position at the last new line inside the editable region.

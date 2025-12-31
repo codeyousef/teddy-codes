@@ -5,7 +5,7 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react";
-import { SiteIndexingConfig } from "core";
+import type { SiteIndexingConfig } from "core";
 import { Provider } from "react-redux";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AuthProvider } from "../../../../context/Auth";

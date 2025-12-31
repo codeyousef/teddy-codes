@@ -3,11 +3,6 @@ import type {
   ContextProviderName,
   ContextSubmenuItemWithProvider,
 } from "core";
-import { deduplicateArray, splitCamelCaseAndNonAlphaNumeric } from "core/util";
-import {
-  getShortestUniqueRelativeUriPaths,
-  getUriPathBasename,
-} from "core/util/uri";
 import MiniSearch, { SearchResult } from "minisearch";
 import {
   createContext,
@@ -20,6 +15,11 @@ import {
 import { useWebviewListener } from "../hooks/useWebviewListener";
 import { useAppSelector } from "../redux/hooks";
 import { selectSubmenuContextProviders } from "../redux/selectors";
+import { deduplicateArray, splitCamelCaseAndNonAlphaNumeric } from "../util";
+import {
+  getShortestUniqueRelativeUriPaths,
+  getUriPathBasename,
+} from "../util/uri";
 import { IdeMessengerContext } from "./IdeMessenger";
 
 const MINISEARCH_OPTIONS = {
@@ -31,8 +31,7 @@ const MAX_LENGTH = 70;
 
 // Enhanced search result interface for intelligent sorting
 interface EnhancedSearchResult
-  extends SearchResult,
-    Omit<ContextSubmenuItemWithProvider, "id"> {
+  extends SearchResult, Omit<ContextSubmenuItemWithProvider, "id"> {
   sortPriority: number;
   matchQuality: number;
 }

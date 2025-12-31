@@ -35,12 +35,16 @@ export class FileSearch {
     const results = await walkDirs(this.ide, {
       source: "file search initialization",
     });
-    this.miniSearch.addAll(
-      results.flat().map((uri) => ({
-        id: uri,
-        relativePath: vscode.workspace.asRelativePath(uri),
-      })),
-    );
+    const items = results.flat().map((uri) => ({
+      id: uri,
+      relativePath: vscode.workspace.asRelativePath(uri),
+    }));
+
+    const chunkSize = 500;
+    for (let i = 0; i < items.length; i += chunkSize) {
+      this.miniSearch.addAll(items.slice(i, i + chunkSize));
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    }
   }
 
   public search(query: string): FileMiniSearchResult[] {

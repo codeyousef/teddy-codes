@@ -1,5 +1,5 @@
 import { JSONContent } from "@tiptap/core";
-import {
+import type {
   AssistantChatMessage,
   ChatMessage,
   InputModifiers,
