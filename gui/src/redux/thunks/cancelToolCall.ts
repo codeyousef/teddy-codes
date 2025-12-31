@@ -1,5 +1,4 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import posthog from "posthog-js";
 import { selectSelectedChatModel } from "../slices/configSlice";
 import {
   cancelToolCall as cancelToolCallAction,
@@ -26,13 +25,7 @@ export const cancelToolCallThunk = createAsyncThunk<
   const toolCallState = findToolCallById(state.session.history, toolCallId);
 
   if (toolCallState) {
-    // Track tool call rejection
-    posthog.capture("tool_call_decision", {
-      model: selectedChatModel,
-      decision: "reject",
-      toolName: toolCallState.toolCall.function.name,
-      toolCallId: toolCallId,
-    });
+    // Tool call rejected by user
   }
 
   if (continueAfterToolRejection) {

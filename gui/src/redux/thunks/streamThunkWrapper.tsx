@@ -1,5 +1,4 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import posthog from "posthog-js";
 import StreamErrorDialog from "../../pages/gui/StreamError";
 import { analyzeError } from "../../util/errorAnalysis";
 import { selectSelectedChatModel } from "../slices/configSlice";
@@ -38,13 +37,7 @@ export const streamThunkWrapper = createAsyncThunk<
       selectedModel,
     );
 
-    const errorData = {
-      error_type: statusCode ? `HTTP ${statusCode}` : "Unknown",
-      error_message: parsedError,
-      model_provider: providerName,
-      model_title: modelTitle,
-    };
-
-    posthog.capture("gui_stream_error", errorData);
+    // Telemetry disabled for Teddy.Codes
+    void { statusCode, parsedError, providerName, modelTitle };
   }
 });

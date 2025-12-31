@@ -69,6 +69,10 @@ export type ToCoreFromIdeOrWebviewProtocol = {
 
   "teddy/checkProjectStatus": [undefined, { needsIndexing: boolean }];
   "teddy/initializeIndex": [undefined, void];
+  "teddy/search": [
+    { query: string; topK?: number },
+    { results: string[]; isError?: boolean },
+  ];
   "teddy/diagnostics": [
     { diagnostics: { uri: string; errors: string[] }[] },
     void,

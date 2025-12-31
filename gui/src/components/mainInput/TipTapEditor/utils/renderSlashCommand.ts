@@ -4,7 +4,6 @@ import type {
   SlashCommandDescWithSource,
 } from "core";
 import { stripImages } from "core/util/messageContent";
-import posthog from "posthog-js";
 import { IIdeMessenger } from "../../../../context/IdeMessenger";
 import { renderMcpPrompt } from "./renderMcpPrompt";
 import { getRenderedV1Prompt } from "./renderPromptv1";
@@ -42,11 +41,12 @@ export async function renderSlashCommandPrompt(
   }
 
   try {
-    posthog.capture("useSlashCommand", {
+    // Telemetry disabled for Teddy.Codes
+    void {
       name: command.name,
       source: command.source,
       isLegacy: command.isLegacy,
-    });
+    };
   } catch (e) {
     console.error(e);
   }

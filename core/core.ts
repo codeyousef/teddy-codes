@@ -15,6 +15,7 @@ import { DevDataSqliteDb } from "./data/devdataSqlite";
 import { DataLogger } from "./data/log";
 import { CodebaseIndexer } from "./indexing/CodebaseIndexer";
 import DocsService from "./indexing/docs/DocsService";
+import { LeannMCPServer } from "./leann/index.js";
 import { countTokens } from "./llm/countTokens";
 import Lemonade from "./llm/llms/Lemonade";
 import Ollama from "./llm/llms/Ollama";
@@ -339,21 +340,7 @@ export class Core {
       if (workspaceDirs.length === 0) return;
       const root = workspaceDirs[0];
 
-      // Step A: Constitution
-      // const teddyMdPath = URI.joinPath(URI.parse(root), "TEDDY.md").toString();
-      // Note: ide.fileExists takes a string path, but joinPath returns a URI string.
-      // Assuming root is a URI string (e.g. file:///...)
-
-      // Let's check how getWorkspaceDirs returns paths.
-      // It usually returns URI strings in VS Code.
-
-      // Using simple string concatenation might be risky if root doesn't end with /
-      // But let's look at checkProjectStatus implementation:
-      // const root = workspaceDirs[0];
-      // const hasGit = await this.ide.fileExists(root + "/.git");
-
-      // So I will follow that pattern.
-
+      // Step A: Constitution - create TEDDY.md if not exists
       const teddyPath = root + "/TEDDY.md";
       const exists = await this.ide.fileExists(teddyPath);
 
@@ -370,9 +357,56 @@ This project is managed by Teddy.Codes.
         await this.ide.writeFile(teddyPath, defaultConstitution);
       }
 
-      // TODO: Trigger LEANN indexing via MCP
+      // Step B: Build LEANN index
       console.log("Teddy: Initializing LEANN index...");
+
+      try {
+        // Convert URI to file path if needed
+        let rootPath = root;
+        if (root.startsWith("file://")) {
+          rootPath = root.replace("file://", "");
+        }
+
+        const leannServer = new LeannMCPServer({ rootPath });
+        const result = await leannServer.callTool("leann_build", {});
+
+        if (result.isError) {
+          console.error("LEANN build failed:", result.content[0]?.text);
+        } else {
+          console.log("LEANN index built:", result.content[0]?.text);
+        }
+      } catch (e) {
+        console.error("Failed to build LEANN index:", e);
+      }
+
       return;
+    });
+
+    on("teddy/search", async (msg) => {
+      const workspaceDirs = await this.ide.getWorkspaceDirs();
+      if (workspaceDirs.length === 0) return { results: [] };
+
+      const root = workspaceDirs[0];
+      let rootPath = root;
+      if (root.startsWith("file://")) {
+        rootPath = root.replace("file://", "");
+      }
+
+      try {
+        const leannServer = new LeannMCPServer({ rootPath });
+        const result = await leannServer.callTool("leann_search", {
+          query: msg.data.query,
+          topK: msg.data.topK || 5,
+        });
+
+        return {
+          results: result.content.map((c) => c.text),
+          isError: result.isError,
+        };
+      } catch (e) {
+        console.error("LEANN search failed:", e);
+        return { results: [], isError: true };
+      }
     });
 
     on("teddy/diagnostics", (msg) => {
