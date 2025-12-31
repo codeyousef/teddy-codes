@@ -21,6 +21,7 @@ import GoogleContextProvider from "./GoogleContextProvider";
 import GreptileContextProvider from "./GreptileContextProvider";
 import HttpContextProvider from "./HttpContextProvider";
 import JiraIssuesContextProvider from "./JiraIssuesContextProvider/";
+import { LeannContextProvider } from "./LeannContextProvider";
 import MCPContextProvider from "./MCPContextProvider";
 import OpenFilesContextProvider from "./OpenFilesContextProvider";
 import OSContextProvider from "./OSContextProvider";
@@ -57,6 +58,7 @@ export const Providers: (typeof BaseContextProvider)[] = [
   DocsContextProvider,
   GitLabMergeRequestContextProvider,
   JiraIssuesContextProvider,
+  LeannContextProvider,
   PostgresContextProvider,
   DatabaseContextProvider,
   CodebaseContextProvider,

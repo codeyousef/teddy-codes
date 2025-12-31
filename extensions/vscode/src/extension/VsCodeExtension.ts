@@ -39,6 +39,8 @@ import { VsCodeIde } from "../VsCodeIde";
 import { ConfigYamlDocumentLinkProvider } from "./ConfigYamlDocumentLinkProvider";
 import { VsCodeMessenger } from "./VsCodeMessenger";
 
+import { setupDiagnostics } from "../integrations/diagnostics";
+
 import { modelSupportsNextEdit } from "core/llm/autodetect";
 import { NEXT_EDIT_MODELS } from "core/llm/constants";
 import { NextEditProvider } from "core/nextEdit/NextEditProvider";
@@ -287,6 +289,10 @@ export class VsCodeExtension {
     );
 
     this.core = new Core(inProcessMessenger, this.ide);
+
+    // Teddy.Codes: Setup Diagnostics
+    setupDiagnostics(inProcessMessenger);
+
     this.configHandler = this.core.configHandler;
     resolveConfigHandler?.(this.configHandler);
 

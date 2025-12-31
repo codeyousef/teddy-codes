@@ -1,4 +1,5 @@
 import {
+  BeakerIcon,
   ChatBubbleLeftIcon,
   CpuChipIcon,
   RocketLaunchIcon,
@@ -30,6 +31,8 @@ export function ModeIcon({
       return <UserCircleIcon className={className} />;
     case "autonomous":
       return <CpuChipIcon className={className} />;
+    case "tdd":
+      return <BeakerIcon className={className} />;
     default:
       return <SparklesIcon className={className} />;
   }

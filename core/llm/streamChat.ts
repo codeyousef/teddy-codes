@@ -10,6 +10,9 @@ import {
 } from "..";
 import { ConfigHandler } from "../config/ConfigHandler";
 import { usesCreditsBasedApiKey } from "../config/usesFreeTrialApiKey";
+import { RepoMap } from "../indexing/repoMap";
+import { autonomousMode } from "../modes/autonomous";
+import { tddMode } from "../modes/tdd";
 import { FromCoreProtocol, ToCoreProtocol } from "../protocol";
 import { IMessenger, Message } from "../protocol/messenger";
 import { callTool } from "../tools/callTool";
@@ -20,6 +23,7 @@ import { CostTracker } from "./CostTracker";
 import { ModelRouter } from "./ModelRouter";
 import { DEFAULT_CONTEXT_LENGTH } from "./constants";
 import { countChatMessageTokens, countTokens } from "./countTokens";
+import { TokenBudget } from "./tokenBudget";
 import { isOutOfStarterCredits } from "./utils/starterCredits";
 
 function mergeToolCallDeltas(deltas: ToolCallDelta[]): ToolCall[] {
@@ -75,9 +79,11 @@ export async function* llmStreamChat(
   const {
     legacySlashCommandData,
     completionOptions,
-    messages,
+    messages: originalMessages,
     messageOptions,
   } = msg.data;
+
+  let messages = [...originalMessages];
 
   const model = config.selectedModelByRole.chat;
 
@@ -173,12 +179,67 @@ export async function* llmStreamChat(
       const selectedModel = routedModel || model;
       // ---------------------------------------
 
+      // Teddy.Codes: Inject Repo Map
+      try {
+        const repoMapGenerator = new RepoMap(ide);
+        const repoMapContent = await repoMapGenerator.generate();
+
+        if (repoMapContent) {
+          const systemMessageIndex = messages.findIndex(
+            (m) => m.role === "system",
+          );
+          if (systemMessageIndex !== -1) {
+            if (typeof messages[systemMessageIndex].content === "string") {
+              messages[systemMessageIndex].content += "\n\n" + repoMapContent;
+            }
+          } else {
+            messages.unshift({
+              role: "system",
+              content: repoMapContent,
+            });
+          }
+        }
+      } catch (e) {
+        console.error("Failed to generate Repo Map:", e);
+      }
+
+      // Teddy.Codes: Mode Delegation
+      if (msg.data.mode === "autonomous") {
+        for await (const chunk of autonomousMode(
+          configHandler,
+          ide,
+          messages,
+          selectedModel,
+        )) {
+          yield { role: "assistant", content: chunk };
+        }
+        return { ...errorPromptLog, completion: "Autonomous Mode Complete" };
+      }
+
+      if (msg.data.mode === "tdd") {
+        for await (const chunk of tddMode(
+          configHandler,
+          ide,
+          messages,
+          selectedModel,
+        )) {
+          yield { role: "assistant", content: chunk };
+        }
+        return { ...errorPromptLog, completion: "TDD Mode Complete" };
+      }
+
+      // Teddy.Codes: Enforce Token Budget
+      const budgetedMessages = TokenBudget.enforce(
+        messages,
+        selectedModel.model,
+      );
+
       const budgetManager = new ContextBudgetManager(
         selectedModel.contextLength || DEFAULT_CONTEXT_LENGTH,
         selectedModel.model,
       );
 
-      // Autonomous Mode Loop
+      // Standard Chat Loop
       const isAutonomous = msg.data.mode === "autonomous";
       const MAX_LOOPS = isAutonomous ? 10 : 1;
       let loopCount = 0;
@@ -187,7 +248,7 @@ export async function* llmStreamChat(
       while (loopCount < MAX_LOOPS) {
         loopCount++;
 
-        const prunedMessages = budgetManager.pruneMessages(messages);
+        const prunedMessages = budgetManager.pruneMessages(budgetedMessages);
 
         const gen = selectedModel.streamChat(
           prunedMessages,

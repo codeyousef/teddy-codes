@@ -189,7 +189,8 @@ export class IpcMessenger<
     console.log("Setup");
     process.stdin.on("data", (data) => {
       // console.log("[info] Received data: ", data.toString());
-      this._handleData(data);
+      const buffer = typeof data === "string" ? Buffer.from(data) : data;
+      this._handleData(buffer);
     });
     process.stdout.on("close", () => {
       fs.writeFileSync("./error.log", `${new Date().toISOString()}\n`);

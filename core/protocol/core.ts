@@ -67,6 +67,13 @@ export type ToCoreFromIdeOrWebviewProtocol = {
   abort: [undefined, void];
   cancelApply: [undefined, void];
 
+  "teddy/checkProjectStatus": [undefined, { needsIndexing: boolean }];
+  "teddy/initializeIndex": [undefined, void];
+  "teddy/diagnostics": [
+    { diagnostics: { uri: string; errors: string[] }[] },
+    void,
+  ];
+
   // History
   "history/list": [
     ListHistoryOptions,

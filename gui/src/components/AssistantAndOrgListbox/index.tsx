@@ -1,6 +1,5 @@
 import {
   ArrowPathIcon,
-  ArrowRightStartOnRectangleIcon,
   Cog6ToothIcon,
   PlusIcon,
 } from "@heroicons/react/24/outline";
@@ -26,7 +25,6 @@ import {
 } from "../ui";
 import { Divider } from "../ui/Divider";
 import { AssistantOptions } from "./AssistantOptions";
-import { OrganizationOptions } from "./OrganizationOptions";
 import { SelectedAssistantButton } from "./SelectedAssistantButton";
 
 export interface AssistantAndOrgListboxProps {
@@ -188,7 +186,8 @@ export function AssistantAndOrgListbox({
               onClose={close}
             />
 
-            {shouldRenderOrgInfo && (
+            {/* Teddy.Codes: Removed Organization Options */}
+            {/* {shouldRenderOrgInfo && (
               <>
                 <Divider className="!mb-0.5 !mt-0" />
                 <div className="flex items-center justify-between px-1.5 py-1">
@@ -225,7 +224,7 @@ export function AssistantAndOrgListbox({
 
                 <Divider className="!mb-0 mt-0.5" />
               </>
-            )}
+            )} */}
 
             {/* Settings Section */}
             {variant !== "sidebar" && (
@@ -249,7 +248,8 @@ export function AssistantAndOrgListbox({
                     <span className="text-2xs">Reload</span>
                   </div>
                 </Button>
-                {session ? (
+                {/* Teddy.Codes: Removed Login/Logout */}
+                {/* {session ? (
                   <Button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -281,7 +281,7 @@ export function AssistantAndOrgListbox({
                       <span className="text-2xs">Log in</span>
                     </div>
                   </Button>
-                )}
+                )} */}
 
                 <Divider className="!mt-0" />
               </div>

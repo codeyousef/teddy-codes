@@ -96,6 +96,7 @@ export class Core {
   private docsService: DocsService;
   private globalContext = new GlobalContext();
   llmLogger = new LLMLogger();
+  public diagnostics: { uri: string; errors: string[] }[] = [];
 
   private messageAbortControllers = new Map<string, AbortController>();
   private addMessageAbortController(id: string): AbortController {
@@ -319,6 +320,28 @@ export class Core {
         throw new Error("ping message incorrect");
       }
       return "pong";
+    });
+
+    on("teddy/checkProjectStatus", async (msg) => {
+      const workspaceDirs = await this.ide.getWorkspaceDirs();
+      if (workspaceDirs.length === 0) {
+        return { needsIndexing: false };
+      }
+      const root = workspaceDirs[0];
+      const hasGit = await this.ide.fileExists(root + "/.git");
+      const hasLeann = await this.ide.fileExists(root + "/.leann");
+
+      return { needsIndexing: hasGit && !hasLeann };
+    });
+
+    on("teddy/initializeIndex", async (msg) => {
+      // TODO: Trigger LEANN indexing via MCP
+      console.log("Teddy: Initializing LEANN index...");
+      return;
+    });
+
+    on("teddy/diagnostics", (msg) => {
+      this.diagnostics = msg.data.diagnostics;
     });
 
     // History

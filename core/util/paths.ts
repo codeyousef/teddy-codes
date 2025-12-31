@@ -112,6 +112,20 @@ export function getSessionsListPath(): string {
 
 export function getConfigJsonPath(): string {
   const p = path.join(getContinueGlobalPath(), "config.json");
+  if (!fs.existsSync(p)) {
+    fs.writeFileSync(
+      p,
+      JSON.stringify(
+        {
+          models: [],
+          tabAutocompleteModel: [],
+          allowAnonymousTelemetry: false,
+        },
+        null,
+        2,
+      ),
+    );
+  }
   return p;
 }
 

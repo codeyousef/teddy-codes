@@ -49,6 +49,7 @@ export function ModeSelect() {
       "agent",
       "assistant",
       "autonomous",
+      "tdd",
       "background",
       ...customModes.map((m) => m.slug),
     ];
@@ -135,10 +136,12 @@ export function ModeSelect() {
                     ? "Assistant"
                     : mode === "autonomous"
                       ? "Autonomous"
-                      : mode === "plan"
-                        ? "Plan"
-                        : customModes.find((m) => m.slug === mode)?.name ||
-                          mode}
+                      : mode === "tdd"
+                        ? "TDD"
+                        : mode === "plan"
+                          ? "Plan"
+                          : customModes.find((m) => m.slug === mode)?.name ||
+                            mode}
           </span>
           <ChevronDownIcon
             className="h-2 w-2 flex-shrink-0"
@@ -242,6 +245,25 @@ export function ModeSelect() {
             {!isGoodAtAgentMode && notGreatAtAgent("Autonomous")}
             <CheckIcon
               className={`ml-auto h-3 w-3 ${mode === "autonomous" ? "" : "opacity-0"}`}
+            />
+          </ListboxOption>
+
+          <ListboxOption value="tdd" className={"gap-1"}>
+            <div className="flex flex-row items-center gap-1.5">
+              <ModeIcon mode="tdd" />
+              <span className="">TDD</span>
+              <ToolTip
+                style={{
+                  zIndex: 200001,
+                }}
+                content="Test-Driven Development"
+              >
+                <InformationCircleIcon className="h-2.5 w-2.5 flex-shrink-0" />
+              </ToolTip>
+            </div>
+            {!isGoodAtAgentMode && notGreatAtAgent("TDD")}
+            <CheckIcon
+              className={`ml-auto h-3 w-3 ${mode === "tdd" ? "" : "opacity-0"}`}
             />
           </ListboxOption>
 

@@ -1,27 +1,27 @@
 {
-  "name": "continue",
+  "name": "teddy-codes",
   "icon": "media/icon.png",
-  "author": "Continue Dev, Inc",
+  "author": "Teddy Codes",
   "version": "1.3.28",
   "repository": {
     "type": "git",
-    "url": "https://github.com/continuedev/continue"
+    "url": "https://github.com/teddy-codes/teddy"
   },
   "extensionKind": [
     "ui",
     "workspace"
   ],
   "bugs": {
-    "url": "https://github.com/continuedev/continue/issues",
-    "email": "nate@continue.dev"
+    "url": "https://github.com/teddy-codes/teddy/issues",
+    "email": "hello@teddy.codes"
   },
-  "homepage": "https://continue.dev",
-  "qna": "https://github.com/continuedev/continue/issues/new/choose",
+  "homepage": "https://teddy.codes",
+  "qna": "https://github.com/teddy-codes/teddy/issues/new/choose",
   "license": "Apache-2.0",
-  "displayName": "Continue - open-source AI code agent",
+  "displayName": "Teddy.Codes",
   "pricing": "Free",
-  "description": "The leading open-source AI code agent",
-  "publisher": "Continue",
+  "description": "A hard-to-fail, local-first reasoning engine with automated context intelligence and implicit workflows.",
+  "publisher": "TeddyCodes",
   "engines": {
     "vscode": "^1.70.0",
     "node": ">=20.19.0"
