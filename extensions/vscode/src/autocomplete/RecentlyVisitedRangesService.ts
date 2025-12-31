@@ -124,6 +124,9 @@ export class RecentlyVisitedRangesService {
             // while looking at the prompts in the Continue's output
             !s.filepath.startsWith(
               "output:extension-output-Continue.continue",
+            ) &&
+            !s.filepath.startsWith(
+              "output:extension-output-TeddyCodes.teddy-codes",
             )),
       )
       .sort((a, b) => b.timestamp - a.timestamp)

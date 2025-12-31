@@ -307,7 +307,8 @@ export class InlineTipManager {
 
       const dataUri = `data:image/svg+xml;base64,${Buffer.from(svgContent).toString("base64")}`;
 
-      this.svgTooltip = vscode.Uri.parse(dataUri);
+      // Use strict=false to allow data: URIs which contain ':' in the scheme
+      this.svgTooltip = vscode.Uri.parse(dataUri, true);
       this.svgTooltipDecoration.dispose();
       this.svgTooltipDecoration = this.createSvgTooltipDecoration();
     } catch (error) {

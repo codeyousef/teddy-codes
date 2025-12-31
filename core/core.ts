@@ -335,6 +335,41 @@ export class Core {
     });
 
     on("teddy/initializeIndex", async (msg) => {
+      const workspaceDirs = await this.ide.getWorkspaceDirs();
+      if (workspaceDirs.length === 0) return;
+      const root = workspaceDirs[0];
+
+      // Step A: Constitution
+      // const teddyMdPath = URI.joinPath(URI.parse(root), "TEDDY.md").toString();
+      // Note: ide.fileExists takes a string path, but joinPath returns a URI string.
+      // Assuming root is a URI string (e.g. file:///...)
+
+      // Let's check how getWorkspaceDirs returns paths.
+      // It usually returns URI strings in VS Code.
+
+      // Using simple string concatenation might be risky if root doesn't end with /
+      // But let's look at checkProjectStatus implementation:
+      // const root = workspaceDirs[0];
+      // const hasGit = await this.ide.fileExists(root + "/.git");
+
+      // So I will follow that pattern.
+
+      const teddyPath = root + "/TEDDY.md";
+      const exists = await this.ide.fileExists(teddyPath);
+
+      if (!exists) {
+        const defaultConstitution = `# Teddy Constitution
+
+## Project Overview
+This project is managed by Teddy.Codes.
+
+## Rules
+1. Always write clean, maintainable code.
+2. Follow TDD practices when in TDD mode.
+`;
+        await this.ide.writeFile(teddyPath, defaultConstitution);
+      }
+
       // TODO: Trigger LEANN indexing via MCP
       console.log("Teddy: Initializing LEANN index...");
       return;

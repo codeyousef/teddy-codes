@@ -62,6 +62,7 @@ function ContinueInputBox(props: ContinueInputBoxProps) {
   );
   const isInEdit = useAppSelector((store) => store.session.isInEdit);
   const editModeState = useAppSelector((state) => state.editModeState);
+  const mode = useAppSelector((state) => state.session.mode);
 
   const filteredSlashCommands = useMemo(() => {
     if (isInEdit) {
@@ -119,7 +120,13 @@ function ContinueInputBox(props: ContinueInputBoxProps) {
           borderColor={
             isStreaming && (props.isLastUserInput || isInEdit)
               ? undefined
-              : vscBackground
+              : mode === "autonomous"
+                ? "#a855f7"
+                : mode === "tdd"
+                  ? "#22c55e"
+                  : mode === "chat"
+                    ? "#3b82f6"
+                    : vscBackground
           }
           borderRadius={defaultBorderRadius}
         >

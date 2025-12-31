@@ -651,7 +651,7 @@ class VsCodeIde implements IDE {
       exec(command, { cwd }, (error, stdout, stderr) => {
         if (error) {
           console.warn(error);
-          reject(stderr);
+          reject(new Error(stderr));
         }
         resolve([stdout, stderr]);
       });

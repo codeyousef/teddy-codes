@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { Button, SecondaryButton } from "../..";
+import { Button } from "../..";
 import { useAuth } from "../../../context/Auth";
 import { IdeMessengerContext } from "../../../context/IdeMessenger";
 import { useAppDispatch, useAppSelector } from "../../../redux/hooks";
@@ -50,20 +50,11 @@ export function OnboardingCardLanding({
         <ContinueLogo height={75} />
       </div>
 
-      <p className="mb-5 mt-0 w-full text-sm">
-        Log in to Continue Hub to get started with AI-powered coding
-      </p>
+      <p className="mb-5 mt-0 w-full text-sm">Welcome to Teddy.Codes</p>
 
-      <Button
-        onClick={onGetStarted}
-        className="mt-4 grid w-full grid-flow-col items-center gap-2"
-      >
-        Log in to Continue Hub
+      <Button onClick={onSelectConfigure} className="w-full">
+        Configure your own models
       </Button>
-
-      <SecondaryButton onClick={onSelectConfigure} className="w-full">
-        Or, configure your own models
-      </SecondaryButton>
     </div>
   );
 }

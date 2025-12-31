@@ -1,8 +1,12 @@
 import { sentryVitePlugin } from "@sentry/vite-plugin";
 import react from "@vitejs/plugin-react-swc";
-import { resolve } from "path";
+import { dirname, resolve } from "path";
 import tailwindcss from "tailwindcss";
+import { fileURLToPath } from "url";
 import { defineConfig } from "vitest/config";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // https://vitejs.dev/config/
 export default defineConfig({

@@ -87,6 +87,13 @@ export class JumpManager {
   private _completionAfterJump: CompletionDataForAfterJump | null = null;
   private _oldCursorPosition: vscode.Position | undefined;
 
+  // Track if commands have been registered to prevent duplicates
+  private _commandsRegistered = false;
+
+  // Current context for command callbacks
+  private _currentEditor: vscode.TextEditor | undefined;
+  private _currentJumpPosition: vscode.Position | undefined;
+
   private constructor() {
     // Build the first SVG icon
     this._createSvgJumpIcon();
@@ -154,7 +161,8 @@ export class JumpManager {
       const dataUri = `data:image/svg+xml;base64,${Buffer.from(
         svgContent,
       ).toString("base64")}`;
-      this._jumpIcon = vscode.Uri.parse(dataUri);
+      // Use strict=false to allow data: URIs which contain ':' in the scheme
+      this._jumpIcon = vscode.Uri.parse(dataUri, true);
 
       // Dispose the old decoration (if any) and create a fresh one.
       if (this._jumpDecoration) {
@@ -349,40 +357,64 @@ export class JumpManager {
     editor: vscode.TextEditor,
     jumpPosition: vscode.Position,
   ) {
-    const acceptJumpCommand = vscode.commands.registerCommand(
-      "continue.acceptJump",
-      async () => {
-        if (this._jumpDecorationVisible) {
-          this._jumpAccepted = true;
+    // Store current context for command callbacks
+    this._currentEditor = editor;
+    this._currentJumpPosition = jumpPosition;
 
-          // Scroll to show the jump location.
-          editor.revealRange(
-            new vscode.Range(jumpPosition.line, 0, jumpPosition.line, 0),
-            vscode.TextEditorRevealType.InCenter,
-          );
+    // Only register commands once to prevent duplicates
+    if (!this._commandsRegistered) {
+      const acceptJumpCommand = vscode.commands.registerCommand(
+        "continue.acceptJump",
+        async () => {
+          if (
+            this._jumpDecorationVisible &&
+            this._currentEditor &&
+            this._currentJumpPosition
+          ) {
+            this._jumpAccepted = true;
 
-          // Move cursor to the jump position.
-          editor.selection = new vscode.Selection(jumpPosition, jumpPosition);
-          await this.clearJumpDecoration();
+            // Scroll to show the jump location.
+            this._currentEditor.revealRange(
+              new vscode.Range(
+                this._currentJumpPosition.line,
+                0,
+                this._currentJumpPosition.line,
+                0,
+              ),
+              vscode.TextEditorRevealType.InCenter,
+            );
 
-          this._jumpAccepted = false;
-          vscode.commands.executeCommand("editor.action.inlineSuggest.trigger");
-        }
-      },
-    );
+            // Move cursor to the jump position.
+            this._currentEditor.selection = new vscode.Selection(
+              this._currentJumpPosition,
+              this._currentJumpPosition,
+            );
+            await this.clearJumpDecoration();
 
-    const rejectJumpCommand = vscode.commands.registerCommand(
-      "continue.rejectJump",
-      async () => {
-        if (this._jumpDecorationVisible) {
-          console.debug(
-            "deleteChain from JumpManager.ts: rejectJump and decoration visible",
-          );
-          NextEditProvider.getInstance().deleteChain();
-          await this.clearJumpDecoration();
-        }
-      },
-    );
+            this._jumpAccepted = false;
+            vscode.commands.executeCommand(
+              "editor.action.inlineSuggest.trigger",
+            );
+          }
+        },
+      );
+
+      const rejectJumpCommand = vscode.commands.registerCommand(
+        "continue.rejectJump",
+        async () => {
+          if (this._jumpDecorationVisible) {
+            console.debug(
+              "deleteChain from JumpManager.ts: rejectJump and decoration visible",
+            );
+            NextEditProvider.getInstance().deleteChain();
+            await this.clearJumpDecoration();
+          }
+        },
+      );
+
+      this._disposables.push(acceptJumpCommand, rejectJumpCommand);
+      this._commandsRegistered = true;
+    }
 
     // Add a selection change listener to the editor to reject jump when cursor moves.
     const selectionChangeListener =
@@ -395,7 +427,10 @@ export class JumpManager {
         const currentPosition = e.selections[0].active;
 
         // If cursor moved to jump position, this is likely the result of acceptJump.
-        if (currentPosition.isEqual(jumpPosition)) {
+        if (
+          this._currentJumpPosition &&
+          currentPosition.isEqual(this._currentJumpPosition)
+        ) {
           return;
         }
 
@@ -408,12 +443,8 @@ export class JumpManager {
         }
       });
 
-    // This allows us to dispose the command after a jump is completed.
-    this._disposables.push(
-      acceptJumpCommand,
-      rejectJumpCommand,
-      selectionChangeListener,
-    );
+    // This allows us to dispose the selection listener after a jump is completed.
+    this._disposables.push(selectionChangeListener);
   }
 
   isJumpInProgress(): boolean {
