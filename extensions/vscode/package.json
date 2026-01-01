@@ -627,7 +627,7 @@
         {
           "id": "continue",
           "title": "Continue",
-          "icon": "media/sidebar-icon.png"
+          "icon": "media/sidebar-icon.svg"
         }
       ],
       "panel": [
@@ -644,7 +644,7 @@
           "type": "webview",
           "id": "continue.continueGUIView",
           "name": "Continue",
-          "icon": "media/sidebar-icon.png",
+          "icon": "media/sidebar-icon.svg",
           "visibility": "visible"
         }
       ],
