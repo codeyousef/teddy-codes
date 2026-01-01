@@ -360,6 +360,13 @@ This project is managed by Teddy.Codes.
       // Step B: Build LEANN index
       console.log("Teddy: Initializing LEANN index...");
 
+      // Send initial progress
+      this.messenger.send("indexProgress", {
+        progress: 0,
+        desc: "Scanning codebase...",
+        status: "indexing",
+      });
+
       try {
         // Convert URI to file path if needed
         let rootPath = root;
@@ -367,16 +374,41 @@ This project is managed by Teddy.Codes.
           rootPath = root.replace("file://", "");
         }
 
-        const leannServer = new LeannMCPServer({ rootPath });
+        const leannServer = new LeannMCPServer({
+          rootPath,
+          onProgress: (current, total, status) => {
+            const progress = total > 0 ? current / total : 0;
+            this.messenger.send("indexProgress", {
+              progress,
+              desc: `LEANN: ${status}`,
+              status: "indexing",
+            });
+          },
+        });
         const result = await leannServer.callTool("leann_build", {});
 
         if (result.isError) {
           console.error("LEANN build failed:", result.content[0]?.text);
+          this.messenger.send("indexProgress", {
+            progress: 0,
+            desc: "LEANN indexing failed",
+            status: "failed",
+          });
         } else {
           console.log("LEANN index built:", result.content[0]?.text);
+          this.messenger.send("indexProgress", {
+            progress: 1,
+            desc: "LEANN indexing complete!",
+            status: "done",
+          });
         }
       } catch (e) {
         console.error("Failed to build LEANN index:", e);
+        this.messenger.send("indexProgress", {
+          progress: 0,
+          desc: "LEANN indexing error",
+          status: "failed",
+        });
       }
 
       return;

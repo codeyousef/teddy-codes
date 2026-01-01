@@ -1,7 +1,7 @@
 // React Component Autocomplete Tests
 // Test autocomplete for React patterns and JSX
 
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 // ============================================
 // Test 1: useState hook completion

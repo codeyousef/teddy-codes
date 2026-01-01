@@ -11,6 +11,7 @@ import { LeannIndex, LeannSearchOptions } from "./LeannIndex.js";
 
 export interface LeannMCPConfig {
   rootPath: string;
+  onProgress?: (current: number, total: number, status: string) => void;
 }
 
 export interface LeannMCPTool {
@@ -157,14 +158,28 @@ export class LeannMCPServer {
     try {
       await this.index.initialize();
 
+      // Notify start
+      this.config.onProgress?.(0, 1, "Scanning files...");
+
       const startTime = Date.now();
       const { indexed, skipped } = await this.index.build((current, total) => {
-        // Progress callback - could emit events here
-        console.log(`LEANN indexing: ${current}/${total}`);
+        // Progress callback - emit to extension
+        this.config.onProgress?.(
+          current,
+          total,
+          `Indexing files (${current}/${total})`,
+        );
       });
 
       const duration = ((Date.now() - startTime) / 1000).toFixed(1);
       const stats = this.index.getStats();
+
+      // Notify completion
+      this.config.onProgress?.(
+        stats.documentCount,
+        stats.documentCount,
+        "Complete!",
+      );
 
       return {
         content: [
