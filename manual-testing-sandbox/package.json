@@ -1,0 +1,20 @@
+{
+  "name": "typescript-calculator",
+  "version": "1.0.0",
+  "description": "A calculator class written in TypeScript",
+  "main": "dist/calculator.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "calculator",
+    "typescript"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}
