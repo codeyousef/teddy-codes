@@ -179,11 +179,15 @@ function parseTeddySpecSteps(content: string): PlanStep[] {
             codeBlock: code,
           });
         }
-        // Code to insert into a file
+        // Code for a target file - check if modification or new code
         else if (target) {
+          // Use edit_file for modifications, insert_code for additions
+          const stepType = isModificationStep(stepTitle)
+            ? "edit_file"
+            : "insert_code";
           steps.push({
             id: stepNum,
-            type: "insert_code",
+            type: stepType,
             target,
             description: stepTitle,
             codeBlock: code,
@@ -193,9 +197,12 @@ function parseTeddySpecSteps(content: string): PlanStep[] {
         else {
           const inferredTarget = inferTargetFromCode(code, lang);
           if (inferredTarget) {
+            const stepType = isModificationStep(stepTitle)
+              ? "edit_file"
+              : "insert_code";
             steps.push({
               id: stepNum,
-              type: "insert_code",
+              type: stepType,
               target: inferredTarget,
               description: stepTitle,
               codeBlock: code,
@@ -219,6 +226,10 @@ function parseTeddySpecSteps(content: string): PlanStep[] {
     const target = match[1] || match[2];
     const sectionContent = match[3];
 
+    // Extract action from the section (look for **Action:** pattern)
+    const actionMatch = sectionContent.match(/\*\*Action:\*\*\s*([^\n]+)/i);
+    const actionDesc = actionMatch ? actionMatch[1].trim() : `Modify ${target}`;
+
     // Find code blocks after this target
     const codeMatch = sectionContent.match(/```(\w*)\n([\s\S]*?)```/);
 
@@ -229,11 +240,15 @@ function parseTeddySpecSteps(content: string): PlanStep[] {
       // Skip if bash - will be handled as command
       if (lang !== "bash" && lang !== "sh") {
         stepNum++;
+        // Use edit_file for modifications, insert_code for additions
+        const stepType = isModificationStep(actionDesc)
+          ? "edit_file"
+          : "insert_code";
         steps.push({
           id: stepNum,
-          type: "insert_code",
+          type: stepType,
           target,
-          description: `Modify ${target}`,
+          description: actionDesc,
           codeBlock: code,
         });
         processedRanges.push({
@@ -312,18 +327,27 @@ function parseTeddySpecSteps(content: string): PlanStep[] {
           codeBlock: code,
         });
       } else if (target) {
+        // Use edit_file for modifications, insert_code for additions
+        const stepType = isModificationStep(title)
+          ? "edit_file"
+          : "insert_code";
         steps.push({
           id: stepNum,
-          type: "insert_code",
+          type: stepType,
           target,
           description: title,
           codeBlock: code,
         });
       } else {
         const inferredTarget = inferTargetFromCode(code, lang);
+        const stepType = isModificationStep(title)
+          ? "edit_file"
+          : inferredTarget
+            ? "insert_code"
+            : "analyze";
         steps.push({
           id: stepNum,
-          type: inferredTarget ? "insert_code" : "analyze",
+          type: stepType,
           target: inferredTarget,
           description: title,
           codeBlock: code,
@@ -367,6 +391,31 @@ function hasActionVerb(title: string): boolean {
     "refactor",
   ];
   return actionVerbs.some((v) => lower.includes(v));
+}
+
+/**
+ * Detect if a step description indicates modification of existing code vs new code
+ */
+function isModificationStep(description: string): boolean {
+  const lower = description.toLowerCase();
+  const modifyKeywords = [
+    "modify",
+    "update",
+    "change",
+    "edit",
+    "fix",
+    "replace",
+    "refactor",
+    "remove",
+    "delete",
+    "rename",
+    "move",
+    "convert",
+    "transform",
+    "rewrite",
+  ];
+  // If the description indicates modification of existing code
+  return modifyKeywords.some((k) => lower.includes(k));
 }
 
 /**
@@ -916,30 +965,52 @@ async function* handleEditFile(
   try {
     existingContent = await ide.readFile(filePath);
   } catch {
+    // File doesn't exist - if we have a code block, create the file
+    if (step.codeBlock) {
+      yield `_File doesn't exist, creating with provided code..._\n`;
+      await ide.writeFile(filePath, step.codeBlock);
+      await ide.openFile(filePath);
+      yield `✅ **Created:** \`${step.target}\`\n`;
+      return;
+    }
     yield `⚠️ File not found: ${step.target}\n`;
     return;
   }
 
   yield "_Generating edits..._\n\n";
 
+  // Build prompt with optional code block reference
+  const codeBlockSection = step.codeBlock
+    ? `\nReference code (use this as guidance for the changes):\n\`\`\`\n${step.codeBlock}\n\`\`\`\n`
+    : "";
+
   const prompt = `Edit this file based on the instruction.
 
 File: ${step.target}
 Instruction: ${step.description}
-
-Current content:
+${codeBlockSection}
+Current file content:
 \`\`\`
 ${existingContent.slice(0, 4000)}
 \`\`\`
 
-Output the COMPLETE modified file content. No explanations:`;
+Output the COMPLETE modified file content. Include ALL code from the file with your changes applied. No explanations, just the code:`;
 
   let newContent = "";
+  yield "```\n";
   for await (const chunk of model.streamComplete(prompt)) {
     newContent += chunk;
+    yield chunk;
   }
+  yield "\n```\n\n";
 
   newContent = cleanCodeContent(newContent);
+
+  // Validate that we got meaningful content (not empty or too short)
+  if (newContent.length < 10) {
+    yield `⚠️ Generated content too short, keeping original file\n`;
+    return;
+  }
 
   await ide.writeFile(filePath, newContent);
   await ide.openFile(filePath);
