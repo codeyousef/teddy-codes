@@ -86,7 +86,7 @@
     "authentication": [
       {
         "id": "continue",
-        "label": "Continue"
+        "label": "Teddy"
       }
     ],
     "chatParticipants": [
@@ -97,12 +97,12 @@
       }
     ],
     "configuration": {
-      "title": "Continue",
+      "title": "Teddy",
       "properties": {
         "continue.showInlineTip": {
           "type": "boolean",
           "default": true,
-          "description": "Show inline suggestion to use the Continue keyboard shortcuts (e.g. \"Cmd/Ctrl L to select code, Cmd/Ctrl I to edit\")."
+          "description": "Show inline suggestion to use the Teddy keyboard shortcuts (e.g. \"Cmd/Ctrl L to select code, Cmd/Ctrl I to edit\")."
         },
         "catalyst.budget.dailyLimit": {
           "type": "number",
@@ -141,27 +141,27 @@
         "continue.enableQuickActions": {
           "type": "boolean",
           "default": false,
-          "markdownDescription": "Enable the experimental Quick Actions feature. Read our walkthrough to learn about configuration and how to share feedback: [continue.dev › Walkthrough: Quick Actions (experimental)](https://docs.continue.dev/customize/deep-dives/vscode-actions#quick-actions)"
+          "markdownDescription": "Enable the experimental Quick Actions feature. Read our walkthrough to learn about configuration and how to share feedback: [teddy.codes › Walkthrough: Quick Actions (experimental)](https://docs.teddy.codes/customize/deep-dives/vscode-actions#quick-actions)"
         },
         "continue.enableTabAutocomplete": {
           "type": "boolean",
           "default": true,
-          "markdownDescription": "Enable Continue's tab autocomplete feature. Read our walkthrough to learn about configuration and how to share feedback: [continue.dev › Walkthrough: Tab Autocomplete (beta)](https://docs.continue.dev/features/tab-autocomplete)"
+          "markdownDescription": "Enable Teddy's tab autocomplete feature. Read our walkthrough to learn about configuration and how to share feedback: [teddy.codes › Walkthrough: Tab Autocomplete (beta)](https://docs.teddy.codes/features/tab-autocomplete)"
         },
         "continue.enableNextEdit": {
           "type": "boolean",
           "default": true,
-          "markdownDescription": "Enable Continue's next edit feature. Read our docs to learn about configuration and how to share feedback: [continue.dev › Features › Autocomplete › Next Edit (experimental)](https://docs.continue.dev/features/autocomplete/next-edit)"
+          "markdownDescription": "Enable Teddy's next edit feature. Read our docs to learn about configuration and how to share feedback: [teddy.codes › Features › Autocomplete › Next Edit (experimental)](https://docs.teddy.codes/features/autocomplete/next-edit)"
         },
         "continue.pauseTabAutocompleteOnBattery": {
           "type": "boolean",
           "default": false,
-          "markdownDescription": "Pause Continue's tab autocomplete feature when your battery is low."
+          "markdownDescription": "Pause Teddy's tab autocomplete feature when your battery is low."
         },
         "continue.pauseCodebaseIndexOnStart": {
           "type": "boolean",
           "default": false,
-          "markdownDescription": "Pause Continue's codebase index on start."
+          "markdownDescription": "Pause Teddy's codebase index on start."
         },
         "continue.enableConsole": {
           "type": "boolean",
@@ -173,234 +173,234 @@
     "commands": [
       {
         "command": "continue.applyCodeFromChat",
-        "category": "Continue",
+        "category": "Teddy",
         "title": "Apply code from chat",
-        "group": "Continue"
+        "group": "Teddy"
       },
       {
         "command": "continue.acceptDiff",
-        "category": "Continue",
+        "category": "Teddy",
         "title": "Accept Diff",
-        "group": "Continue"
+        "group": "Teddy"
       },
       {
         "command": "continue.rejectDiff",
-        "category": "Continue",
+        "category": "Teddy",
         "title": "Reject Diff",
-        "group": "Continue",
+        "group": "Teddy",
         "icon": "$(stop)"
       },
       {
         "command": "continue.acceptVerticalDiffBlock",
-        "category": "Continue",
+        "category": "Teddy",
         "title": "Accept Vertical Diff Block",
-        "group": "Continue"
+        "group": "Teddy"
       },
       {
         "command": "continue.rejectVerticalDiffBlock",
-        "category": "Continue",
+        "category": "Teddy",
         "title": "Reject Vertical Diff Block",
-        "group": "Continue"
+        "group": "Teddy"
       },
       {
         "command": "continue.focusEdit",
-        "category": "Continue",
+        "category": "Teddy",
         "title": "Add to Edit",
-        "group": "Continue"
+        "group": "Teddy"
       },
       {
         "command": "continue.focusContinueInput",
-        "category": "Continue",
+        "category": "Teddy",
         "title": "Add Highlighted Code to Context and Clear Chat",
-        "group": "Continue"
+        "group": "Teddy"
       },
       {
         "command": "continue.focusContinueInputWithoutClear",
-        "category": "Continue",
+        "category": "Teddy",
         "title": "Add to Chat",
-        "group": "Continue"
+        "group": "Teddy"
       },
       {
         "command": "continue.debugTerminal",
-        "category": "Continue",
+        "category": "Teddy",
         "title": "Debug Terminal",
-        "group": "Continue"
+        "group": "Teddy"
       },
       {
         "command": "continue.exitEditMode",
-        "category": "Continue",
+        "category": "Teddy",
         "title": "Exit Edit Mode",
-        "group": "Continue"
+        "group": "Teddy"
       },
       {
         "command": "continue.openConfigPage",
-        "category": "Continue",
+        "category": "Teddy",
         "title": "Open Settings",
         "icon": "$(gear)",
-        "group": "Continue"
+        "group": "Teddy"
       },
       {
         "command": "continue.toggleTabAutocompleteEnabled",
-        "category": "Continue",
+        "category": "Teddy",
         "title": "Toggle Autocomplete Enabled",
-        "group": "Continue"
+        "group": "Teddy"
       },
       {
         "command": "continue.forceAutocomplete",
-        "title": "Continue: Force Autocomplete",
-        "category": "Continue"
+        "title": "Teddy: Force Autocomplete",
+        "category": "Teddy"
       },
       {
         "command": "continue.selectFilesAsContext",
-        "category": "Continue",
+        "category": "Teddy",
         "title": "Select Files as Context",
-        "group": "Continue"
+        "group": "Teddy"
       },
       {
         "command": "continue.newSession",
-        "category": "Continue",
+        "category": "Teddy",
         "title": "New Session",
         "icon": "$(add)",
-        "group": "Continue"
+        "group": "Teddy"
       },
       {
         "command": "continue.shareSession",
-        "category": "Continue",
+        "category": "Teddy",
         "title": "Share Current Chat Session as Markdown",
-        "group": "Continue"
+        "group": "Teddy"
       },
       {
         "command": "continue.viewHistory",
-        "category": "Continue",
+        "category": "Teddy",
         "title": "View History",
         "icon": "$(history)",
-        "group": "Continue"
+        "group": "Teddy"
       },
       {
         "command": "continue.viewLogs",
-        "category": "Continue",
+        "category": "Teddy",
         "title": "View Logs",
-        "group": "Continue"
+        "group": "Teddy"
       },
       {
         "command": "continue.clearConsole",
-        "category": "Continue",
+        "category": "Teddy",
         "title": "Clear Console",
         "icon": "$(clear-all)",
-        "group": "Continue"
+        "group": "Teddy"
       },
       {
         "command": "continue.navigateTo",
-        "category": "Continue",
+        "category": "Teddy",
         "title": "Navigate to a path",
-        "group": "Continue"
+        "group": "Teddy"
       },
       {
         "command": "continue.writeCommentsForCode",
-        "category": "Continue",
+        "category": "Teddy",
         "title": "Write Comments for this Code",
-        "group": "Continue"
+        "group": "Teddy"
       },
       {
         "command": "continue.writeDocstringForCode",
-        "category": "Continue",
+        "category": "Teddy",
         "title": "Write a Docstring for this Code",
-        "group": "Continue"
+        "group": "Teddy"
       },
       {
         "command": "continue.fixCode",
-        "category": "Continue",
+        "category": "Teddy",
         "title": "Fix this Code",
-        "group": "Continue"
+        "group": "Teddy"
       },
       {
         "command": "continue.optimizeCode",
-        "category": "Continue",
+        "category": "Teddy",
         "title": "Optimize this Code",
-        "group": "Continue"
+        "group": "Teddy"
       },
       {
         "command": "continue.fixGrammar",
-        "category": "Continue",
+        "category": "Teddy",
         "title": "Fix Grammar / Spelling",
-        "group": "Continue"
+        "group": "Teddy"
       },
       {
         "command": "continue.codebaseForceReIndex",
-        "category": "Continue",
+        "category": "Teddy",
         "title": "Codebase Force Re-Index",
-        "group": "Continue"
+        "group": "Teddy"
       },
       {
         "command": "continue.rebuildCodebaseIndex",
-        "category": "Continue",
+        "category": "Teddy",
         "title": "Rebuild codebase index",
-        "group": "Continue"
+        "group": "Teddy"
       },
       {
         "command": "continue.docsIndex",
-        "category": "Continue",
+        "category": "Teddy",
         "title": "Docs Index",
-        "group": "Continue"
+        "group": "Teddy"
       },
       {
         "command": "continue.docsReIndex",
-        "category": "Continue",
+        "category": "Teddy",
         "title": "Docs Force Re-Index",
-        "group": "Continue"
+        "group": "Teddy"
       },
       {
         "command": "continue.focusContinueInput",
-        "category": "Continue",
-        "title": "Focus Continue Chat",
-        "group": "Continue"
+        "category": "Teddy",
+        "title": "Focus Teddy Chat",
+        "group": "Teddy"
       },
       {
         "command": "continue.enterEnterpriseLicenseKey",
-        "category": "Continue",
+        "category": "Teddy",
         "title": "Enter Enterprise License Key",
-        "group": "Continue"
+        "group": "Teddy"
       },
       {
         "command": "continue.toggleNextEditEnabled",
-        "title": "Continue: Toggle Next Edit"
+        "title": "Teddy: Toggle Next Edit"
       },
       {
         "command": "continue.nextEditWindow.hideNextEditSuggestion",
-        "category": "Continue",
+        "category": "Teddy",
         "title": "Hide Next Edit Suggestion"
       },
       {
         "command": "continue.nextEditWindow.acceptNextEditSuggestion",
-        "category": "Continue",
+        "category": "Teddy",
         "title": "Accept Next Edit Suggestion"
       },
       {
         "command": "continue.forceNextEdit",
-        "category": "Continue",
-        "title": "Continue: Force Next Edit"
+        "category": "Teddy",
+        "title": "Teddy: Force Next Edit"
       },
       {
         "command": "continue.acceptJump",
-        "category": "Continue",
-        "title": "Continue: Accept Jump Suggestion"
+        "category": "Teddy",
+        "title": "Teddy: Accept Jump Suggestion"
       },
       {
         "command": "continue.rejectJump",
-        "category": "Continue",
-        "title": "Continue: Reject Jump Suggestion"
+        "category": "Teddy",
+        "title": "Teddy: Reject Jump Suggestion"
       },
       {
         "command": "continue.generateRule",
-        "category": "Continue",
+        "category": "Teddy",
         "title": "Generate Rule",
-        "group": "Continue"
+        "group": "Teddy"
       },
       {
         "command": "continue.openInNewWindow",
-        "category": "Continue",
+        "category": "Teddy",
         "title": "Open in new window",
-        "group": "Continue"
+        "group": "Teddy"
       }
     ],
     "keybindings": [
@@ -524,7 +524,7 @@
     "submenus": [
       {
         "id": "continue.continueSubMenu",
-        "label": "Continue"
+        "label": "Teddy"
       }
     ],
     "menus": {
@@ -560,18 +560,18 @@
       "editor/title/run": [
         {
           "command": "continue.rejectDiff",
-          "group": "Continue",
+          "group": "Teddy",
           "when": "continue.streamingDiff"
         }
       ],
       "continue.continueSubMenu": [
         {
           "command": "continue.focusContinueInputWithoutClear",
-          "group": "Continue"
+          "group": "Teddy"
         },
         {
           "command": "continue.focusEdit",
-          "group": "Continue",
+          "group": "Teddy",
           "when": "!editorReadonly"
         }
       ],
@@ -626,14 +626,14 @@
       "activitybar": [
         {
           "id": "continue",
-          "title": "Continue",
+          "title": "Teddy",
           "icon": "media/sidebar-icon.svg"
         }
       ],
       "panel": [
         {
           "id": "continueConsole",
-          "title": "Continue Console",
+          "title": "Teddy Console",
           "icon": "$(window)"
         }
       ]

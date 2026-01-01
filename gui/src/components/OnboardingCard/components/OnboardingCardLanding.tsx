@@ -5,7 +5,7 @@ import { IdeMessengerContext } from "../../../context/IdeMessenger";
 import { useAppDispatch, useAppSelector } from "../../../redux/hooks";
 import { selectCurrentOrg } from "../../../redux/slices/profilesSlice";
 import { selectFirstHubProfile } from "../../../redux/thunks/selectFirstHubProfile";
-import ContinueLogo from "../../svg/ContinueLogo";
+import TeddyLogo from "../../svg/TeddyLogo";
 import { useOnboardingCard } from "../hooks/useOnboardingCard";
 
 export function OnboardingCardLanding({
@@ -31,7 +31,7 @@ export function OnboardingCardLanding({
         void dispatch(selectFirstHubProfile());
 
         ideMessenger.post("showTutorial", undefined);
-        ideMessenger.post("showToast", ["info", "🎉 Welcome to Continue!"]);
+        ideMessenger.post("showToast", ["info", "🎉 Welcome to Teddy.Codes!"]);
       }
     });
   }
@@ -47,7 +47,7 @@ export function OnboardingCardLanding({
   return (
     <div className="xs:px-0 flex w-full max-w-full flex-col items-center justify-center px-4 text-center">
       <div className="xs:flex hidden">
-        <ContinueLogo height={75} />
+        <TeddyLogo height={75} />
       </div>
 
       <p className="mb-5 mt-0 w-full text-sm">Welcome to Teddy.Codes</p>

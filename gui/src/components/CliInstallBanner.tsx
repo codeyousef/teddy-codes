@@ -27,7 +27,7 @@ export function CliInstallBanner({
   const [cliInstalled, setCliInstalled] = useState<boolean | null>(null);
   const [dismissed, setDismissed] = useState(false);
   const commandTextRef = useRef<HTMLSpanElement>(null);
-  const { copyText } = useCopy("npm i -g @continuedev/cli");
+  const { copyText } = useCopy("npm i -g @teddycodes/cli");
   const [showCopiedMessage, setShowCopiedMessage] = useState(false);
 
   const handleCommandClick = () => {
@@ -111,7 +111,7 @@ export function CliInstallBanner({
           <div>
             <div className="text-foreground flex items-center gap-2 font-medium">
               <CommandLineIcon className="h-5 w-5 flex-shrink-0 text-gray-400" />
-              Try out the Continue CLI
+              Try out the Teddy CLI
             </div>
             <div className="text-description mt-1 text-sm">
               Use{" "}
@@ -124,7 +124,7 @@ export function CliInstallBanner({
                 onClick={() =>
                   ideMessenger.post(
                     "openUrl",
-                    "https://docs.continue.dev/guides/cli",
+                    "https://docs.teddy.codes/guides/cli",
                   )
                 }
                 className="cursor-pointer underline hover:brightness-125"
@@ -142,7 +142,7 @@ export function CliInstallBanner({
                   style={{ fontFamily: "var(--vscode-editor-font-family)" }}
                   onClick={handleCommandClick}
                 >
-                  npm i -g @continuedev/cli
+                  npm i -g @teddycodes/cli
                 </span>
                 {showCopiedMessage && (
                   <span className="bg-editor rounded-l-default absolute inset-0 flex items-center justify-center px-2 text-xs font-medium">
@@ -152,10 +152,10 @@ export function CliInstallBanner({
               </div>
               <div className="bg-background rounded-r-default flex items-center gap-2 px-3 py-3">
                 <CopyButton
-                  text={`npm i -g @continuedev/cli && cn "Explore this repo and provide a concise summary of it's contents"`}
+                  text={`npm i -g @teddycodes/cli && teddy "Explore this repo and provide a concise summary of it's contents"`}
                 />
                 <RunInTerminalButton
-                  command={`npm i -g @continuedev/cli && cn "Explore this repo and provide a concise summary of it's contents"`}
+                  command={`npm i -g @teddycodes/cli && teddy "Explore this repo and provide a concise summary of it's contents"`}
                 />
               </div>
             </div>

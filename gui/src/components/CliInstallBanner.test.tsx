@@ -60,7 +60,7 @@ describe("CliInstallBanner", () => {
 
       await waitFor(() => {
         expect(
-          screen.queryByText("Try out the Continue CLI"),
+          screen.queryByText("Try out the Teddy CLI"),
         ).not.toBeInTheDocument();
       });
     });
@@ -69,9 +69,7 @@ describe("CliInstallBanner", () => {
       await renderComponent(["", "command not found"]);
 
       await waitFor(() => {
-        expect(
-          screen.getByText("Try out the Continue CLI"),
-        ).toBeInTheDocument();
+        expect(screen.getByText("Try out the Teddy CLI")).toBeInTheDocument();
       });
     });
 
@@ -79,9 +77,7 @@ describe("CliInstallBanner", () => {
       await renderComponent(["", ""]);
 
       await waitFor(() => {
-        expect(
-          screen.getByText("Try out the Continue CLI"),
-        ).toBeInTheDocument();
+        expect(screen.getByText("Try out the Teddy CLI")).toBeInTheDocument();
       });
     });
 
@@ -156,9 +152,7 @@ describe("CliInstallBanner", () => {
       );
 
       await waitFor(() => {
-        expect(
-          screen.getByText("Try out the Continue CLI"),
-        ).toBeInTheDocument();
+        expect(screen.getByText("Try out the Teddy CLI")).toBeInTheDocument();
       });
     });
   });
@@ -167,14 +161,12 @@ describe("CliInstallBanner", () => {
     beforeEach(async () => {
       await renderComponent(["", "not found"]);
       await waitFor(() => {
-        expect(
-          screen.getByText("Try out the Continue CLI"),
-        ).toBeInTheDocument();
+        expect(screen.getByText("Try out the Teddy CLI")).toBeInTheDocument();
       });
     });
 
     it("displays the title", () => {
-      expect(screen.getByText("Try out the Continue CLI")).toBeInTheDocument();
+      expect(screen.getByText("Try out the Teddy CLI")).toBeInTheDocument();
     });
 
     it("displays the description with 'cn' code element", () => {
@@ -184,7 +176,7 @@ describe("CliInstallBanner", () => {
     });
 
     it("displays the installation command", () => {
-      expect(screen.getByText("npm i -g @continuedev/cli")).toBeInTheDocument();
+      expect(screen.getByText("npm i -g @teddycodes/cli")).toBeInTheDocument();
     });
 
     it("displays the Learn more link", () => {
@@ -200,9 +192,7 @@ describe("CliInstallBanner", () => {
 
     it("displays the CommandLine icon", () => {
       // The icon should be present in the component
-      const banner = screen
-        .getByText("Try out the Continue CLI")
-        .closest("div");
+      const banner = screen.getByText("Try out the Teddy CLI").closest("div");
       expect(banner).toBeInTheDocument();
     });
   });
@@ -211,9 +201,7 @@ describe("CliInstallBanner", () => {
     beforeEach(async () => {
       await renderComponent(["", "not found"]);
       await waitFor(() => {
-        expect(
-          screen.getByText("Try out the Continue CLI"),
-        ).toBeInTheDocument();
+        expect(screen.getByText("Try out the Teddy CLI")).toBeInTheDocument();
       });
     });
 
@@ -225,7 +213,7 @@ describe("CliInstallBanner", () => {
 
       await waitFor(() => {
         expect(
-          screen.queryByText("Try out the Continue CLI"),
+          screen.queryByText("Try out the Teddy CLI"),
         ).not.toBeInTheDocument();
       });
     });
@@ -244,7 +232,7 @@ describe("CliInstallBanner", () => {
 
     it("displays the installation command with interactive controls", async () => {
       // The installation command should be visible
-      expect(screen.getByText("npm i -g @continuedev/cli")).toBeInTheDocument();
+      expect(screen.getByText("npm i -g @teddycodes/cli")).toBeInTheDocument();
       // The "Run" text should be visible for the run button
       expect(screen.getByText(/Run/i)).toBeInTheDocument();
     });
@@ -258,7 +246,7 @@ describe("CliInstallBanner", () => {
         fireEvent.click(runButton);
 
         expect(postSpy).toHaveBeenCalledWith("runCommand", {
-          command: `npm i -g @continuedev/cli && cn "Explore this repo and provide a concise summary of it's contents"`,
+          command: `npm i -g @teddycodes/cli && cn "Explore this repo and provide a concise summary of it's contents"`,
         });
       }
     });
@@ -281,7 +269,7 @@ describe("CliInstallBanner", () => {
 
       // Should not be visible immediately
       expect(
-        screen.queryByText("Try out the Continue CLI"),
+        screen.queryByText("Try out the Teddy CLI"),
       ).not.toBeInTheDocument();
     });
 
@@ -289,9 +277,7 @@ describe("CliInstallBanner", () => {
       const { rerender } = await renderComponent(["", "not found"]);
 
       await waitFor(() => {
-        expect(
-          screen.getByText("Try out the Continue CLI"),
-        ).toBeInTheDocument();
+        expect(screen.getByText("Try out the Teddy CLI")).toBeInTheDocument();
       });
 
       // Dismiss the banner
@@ -301,7 +287,7 @@ describe("CliInstallBanner", () => {
 
       await waitFor(() => {
         expect(
-          screen.queryByText("Try out the Continue CLI"),
+          screen.queryByText("Try out the Teddy CLI"),
         ).not.toBeInTheDocument();
       });
 
@@ -314,7 +300,7 @@ describe("CliInstallBanner", () => {
 
       // Should still be hidden
       expect(
-        screen.queryByText("Try out the Continue CLI"),
+        screen.queryByText("Try out the Teddy CLI"),
       ).not.toBeInTheDocument();
     });
   });
@@ -324,9 +310,7 @@ describe("CliInstallBanner", () => {
       await renderComponent(["  \n  ", ""]);
 
       await waitFor(() => {
-        expect(
-          screen.getByText("Try out the Continue CLI"),
-        ).toBeInTheDocument();
+        expect(screen.getByText("Try out the Teddy CLI")).toBeInTheDocument();
       });
     });
 
@@ -335,7 +319,7 @@ describe("CliInstallBanner", () => {
 
       await waitFor(() => {
         expect(
-          screen.queryByText("Try out the Continue CLI"),
+          screen.queryByText("Try out the Teddy CLI"),
         ).not.toBeInTheDocument();
       });
     });
@@ -344,9 +328,7 @@ describe("CliInstallBanner", () => {
       await renderComponent(["", "cn: command not found"]);
 
       await waitFor(() => {
-        expect(
-          screen.getByText("Try out the Continue CLI"),
-        ).toBeInTheDocument();
+        expect(screen.getByText("Try out the Teddy CLI")).toBeInTheDocument();
       });
     });
   });
@@ -377,9 +359,7 @@ describe("CliInstallBanner", () => {
       await renderWithSessionCount(0, undefined);
 
       await waitFor(() => {
-        expect(
-          screen.getByText("Try out the Continue CLI"),
-        ).toBeInTheDocument();
+        expect(screen.getByText("Try out the Teddy CLI")).toBeInTheDocument();
       });
     });
 
@@ -388,7 +368,7 @@ describe("CliInstallBanner", () => {
 
       await waitFor(() => {
         expect(
-          screen.queryByText("Try out the Continue CLI"),
+          screen.queryByText("Try out the Teddy CLI"),
         ).not.toBeInTheDocument();
       });
     });
@@ -397,9 +377,7 @@ describe("CliInstallBanner", () => {
       await renderWithSessionCount(3, 3);
 
       await waitFor(() => {
-        expect(
-          screen.getByText("Try out the Continue CLI"),
-        ).toBeInTheDocument();
+        expect(screen.getByText("Try out the Teddy CLI")).toBeInTheDocument();
       });
     });
 
@@ -407,9 +385,7 @@ describe("CliInstallBanner", () => {
       await renderWithSessionCount(5, 3);
 
       await waitFor(() => {
-        expect(
-          screen.getByText("Try out the Continue CLI"),
-        ).toBeInTheDocument();
+        expect(screen.getByText("Try out the Teddy CLI")).toBeInTheDocument();
       });
     });
   });
@@ -437,7 +413,7 @@ describe("CliInstallBanner", () => {
 
       await waitFor(() => {
         expect(
-          screen.queryByText("Try out the Continue CLI"),
+          screen.queryByText("Try out the Teddy CLI"),
         ).not.toBeInTheDocument();
       });
     });
@@ -446,9 +422,7 @@ describe("CliInstallBanner", () => {
       await renderWithPermanentDismissal();
 
       await waitFor(() => {
-        expect(
-          screen.getByText("Try out the Continue CLI"),
-        ).toBeInTheDocument();
+        expect(screen.getByText("Try out the Teddy CLI")).toBeInTheDocument();
       });
 
       const buttons = screen.getAllByRole("button");
@@ -476,9 +450,7 @@ describe("CliInstallBanner", () => {
       );
 
       await waitFor(() => {
-        expect(
-          screen.getByText("Try out the Continue CLI"),
-        ).toBeInTheDocument();
+        expect(screen.getByText("Try out the Teddy CLI")).toBeInTheDocument();
       });
 
       const buttons = screen.getAllByRole("button");
