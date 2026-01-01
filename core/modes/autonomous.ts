@@ -785,11 +785,20 @@ async function* executeStepsWithVerification(
   const previousResults: any[] = [];
   let lastFailedCount = Infinity;
   let stuckCount = 0; // Track how many times we've made no progress
+  let replanCount = 0; // Track how many times we've re-planned from scratch
+  const MAX_REPLANS = 3; // Maximum fresh re-plans before giving up
 
   while (attempt < MAX_VERIFICATION_ATTEMPTS && !verificationPassed) {
     attempt++;
 
-    if (attempt > 1) {
+    // Every 3 attempts, take a step back and re-plan from scratch
+    const needsReplan =
+      attempt > 1 && (attempt - 1) % 3 === 0 && replanCount < MAX_REPLANS;
+
+    if (needsReplan) {
+      replanCount++;
+      yield `\n🔄 **Re-analyzing (approach ${replanCount + 1})** - taking a fresh look at the problem...\n\n`;
+    } else if (attempt > 1) {
       yield `\n🔄 **Retry ${attempt}** - fixing remaining issues...\n\n`;
     }
 
@@ -850,19 +859,36 @@ async function* executeStepsWithVerification(
 
       yield `\n⚠️ ${currentFailedCount} issue(s) remaining`;
 
-      // Stop if: hit max attempts OR stuck for 2 consecutive attempts with no progress
+      // Stop if: hit max attempts OR stuck for 2 consecutive attempts with no progress AND exhausted replans
       const shouldStop =
-        attempt >= MAX_VERIFICATION_ATTEMPTS || stuckCount >= 2;
+        attempt >= MAX_VERIFICATION_ATTEMPTS ||
+        (stuckCount >= 2 && replanCount >= MAX_REPLANS);
 
       if (!shouldStop) {
-        yield ` - retrying...\n`;
-        // Regenerate steps with feedback for next iteration
-        steps = await regenerateStepsWithFeedback(
-          model,
-          userInstruction,
-          result.suggestions,
-          completedSnapshots,
-        );
+        // Check if next iteration should be a full replan
+        const nextNeedsReplan = attempt % 3 === 0 && replanCount < MAX_REPLANS;
+
+        if (nextNeedsReplan || stuckCount >= 2) {
+          yield ` - will re-analyze...\n`;
+          // Full re-plan: analyze current state and create entirely new approach
+          steps = await createFreshPlan(
+            model,
+            userInstruction,
+            completedSnapshots,
+            previousResults,
+          );
+          stuckCount = 0; // Reset stuck counter after replan
+          lastFailedCount = Infinity; // Reset progress tracking
+        } else {
+          yield ` - retrying...\n`;
+          // Incremental fix based on feedback
+          steps = await regenerateStepsWithFeedback(
+            model,
+            userInstruction,
+            result.suggestions,
+            completedSnapshots,
+          );
+        }
       } else {
         yield `\n\n<details>\n<summary>Issues requiring manual review</summary>\n\n`;
         for (const criterion of failedCriteria) {
@@ -884,7 +910,63 @@ async function* executeStepsWithVerification(
 }
 
 /**
- * Regenerate steps based on verification feedback
+ * Create a completely fresh plan by re-analyzing the current state
+ */
+async function createFreshPlan(
+  model: any,
+  instruction: string,
+  snapshots: Map<string, FileSnapshot>,
+  previousResults: any[],
+): Promise<PlanStep[]> {
+  const filePaths = Array.from(snapshots.keys());
+  const primaryFile = filePaths[0] || "unknown";
+
+  // Summarize what we've tried before
+  const previousApproaches = previousResults
+    .slice(-3)
+    .map((r, i) => {
+      const failed = r.criteriaResults?.filter((c: any) => !c.passed) || [];
+      return `Attempt ${i + 1}: ${failed.map((f: any) => f.name).join(", ")}`;
+    })
+    .join("\n");
+
+  const replanPrompt = `I need a FRESH APPROACH to fix this file.
+
+**Original task:** "${instruction}"
+
+**File:** ${primaryFile}
+
+**Current file content:**
+\`\`\`
+${Array.from(snapshots.entries())
+  .map(([, snap]) => snap.afterContent?.slice(0, 3000) || "")
+  .join("\n\n")}
+\`\`\`
+
+**Previous attempts failed with:**
+${previousApproaches}
+
+**Instructions:**
+1. Re-read the code carefully
+2. Identify ALL remaining issues (don't assume previous fixes worked)
+3. Create a NEW, DIFFERENT approach to fix them
+4. Be more thorough - fix everything in fewer steps if possible
+
+Generate steps in this format:
+1. EDIT_FILE: ${primaryFile} | comprehensive description of ALL changes needed
+
+Output ONLY numbered steps:`;
+
+  let response = "";
+  for await (const chunk of model.streamComplete(replanPrompt)) {
+    response += chunk;
+  }
+
+  return parseSimplePlanSteps(response);
+}
+
+/**
+ * Regenerate steps based on verification feedback (incremental fixes)
  */
 async function regenerateStepsWithFeedback(
   model: any,
