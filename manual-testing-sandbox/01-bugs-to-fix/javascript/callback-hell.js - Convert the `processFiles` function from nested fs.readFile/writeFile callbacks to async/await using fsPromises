@@ -1,0 +1,22 @@
+const fs = require('fs').promises;
+
+async function processFiles() {
+  try {
+    const data1 = await fs.readFile('file1.txt', 'utf8');
+    console.log('File 1:', data1);
+    
+    const data2 = await fs.readFile('file2.txt', 'utf8');
+    console.log('File 2:', data2);
+    
+    const combined = data1 + '\n' + data2;
+    await fs.writeFile('output.txt', combined, 'utf8');
+    console.log('Files combined successfully');
+    
+    const result = await fs.readFile('output.txt', 'utf8');
+    console.log('Result:', result);
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
+
+processFiles();

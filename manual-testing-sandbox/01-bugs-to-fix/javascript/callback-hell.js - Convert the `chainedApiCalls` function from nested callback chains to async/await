@@ -1,0 +1,78 @@
+// Simulated API functions that use callbacks
+function fetchUser(userId, callback) {
+  setTimeout(() => {
+    callback(null, { id: userId, name: 'John Doe' });
+  }, 100);
+}
+
+function fetchPosts(userId, callback) {
+  setTimeout(() => {
+    callback(null, [
+      { id: 1, title: 'Post 1' },
+      { id: 2, title: 'Post 2' }
+    ]);
+  }, 100);
+}
+
+function fetchComments(postId, callback) {
+  setTimeout(() => {
+    callback(null, [
+      { id: 1, text: 'Comment 1' },
+      { id: 2, text: 'Comment 2' }
+    ]);
+  }, 100);
+}
+
+// Promisified versions of the API functions
+function fetchUserAsync(userId) {
+  return new Promise((resolve, reject) => {
+    fetchUser(userId, (error, user) => {
+      if (error) reject(error);
+      else resolve(user);
+    });
+  });
+}
+
+function fetchPostsAsync(userId) {
+  return new Promise((resolve, reject) => {
+    fetchPosts(userId, (error, posts) => {
+      if (error) reject(error);
+      else resolve(posts);
+    });
+  });
+}
+
+function fetchCommentsAsync(postId) {
+  return new Promise((resolve, reject) => {
+    fetchComments(postId, (error, comments) => {
+      if (error) reject(error);
+      else resolve(comments);
+    });
+  });
+}
+
+// Converted to async/await
+async function chainedApiCalls(userId) {
+  try {
+    const user = await fetchUserAsync(userId);
+    console.log('User:', user);
+    
+    const posts = await fetchPostsAsync(user.id);
+    console.log('Posts:', posts);
+    
+    const comments = await fetchCommentsAsync(posts[0].id);
+    console.log('Comments:', comments);
+    
+    return { user, posts, comments };
+  } catch (error) {
+    console.error('Error:', error);
+    throw error;
+  }
+}
+
+// Usage
+chainedApiCalls(1).then(result => {
+  console.log('Final result:', result);
+}).catch(error => {
+  console.error('Failed:', error);
+});

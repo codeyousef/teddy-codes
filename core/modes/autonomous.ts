@@ -1,10 +1,10 @@
 import { ChatMessage, IDE, MessagePart } from "..";
 import { ConfigHandler } from "../config/ConfigHandler";
 import {
-  TaskAnalyzer,
-  VerificationEngine,
-  VerificationContext,
   FileSnapshot,
+  TaskAnalyzer,
+  VerificationContext,
+  VerificationEngine,
 } from "./verification/index.js";
 
 // Verification settings
@@ -476,13 +476,35 @@ function parseSimplePlanSteps(content: string): PlanStep[] {
             ? "run_command"
             : ("analyze" as PlanStep["type"]);
       const rest = match[2];
-      const parts = rest.split("|").map((s) => s.trim());
+
+      // Parse target and description - support both "|" and " - " separators
+      let target: string;
+      let description: string;
+
+      if (rest.includes("|")) {
+        const parts = rest.split("|").map((s) => s.trim());
+        target = parts[0];
+        description = parts[1] || parts[0];
+      } else if (rest.includes(" - ")) {
+        const dashIdx = rest.indexOf(" - ");
+        target = rest.slice(0, dashIdx).trim();
+        description = rest.slice(dashIdx + 3).trim();
+      } else {
+        // No separator - entire thing is target, use as description too
+        target = rest.trim();
+        description = rest.trim();
+      }
+
+      // Clean up target path - remove any trailing description artifacts
+      target = target.replace(/\s+[A-Z].*$/, "").trim();
+      // Remove backticks if present
+      target = target.replace(/^`|`$/g, "");
 
       steps.push({
         id: stepNum,
         type,
-        target: parts[0],
-        description: parts[1] || parts[0],
+        target,
+        description,
       });
     }
   }
@@ -882,32 +904,52 @@ async function regenerateStepsWithFeedback(
   suggestions: string[],
   snapshots: Map<string, FileSnapshot>,
 ): Promise<PlanStep[]> {
+  // Extract actual file paths from snapshots
+  const filePaths = Array.from(snapshots.keys());
+  const primaryFile = filePaths[0] || "unknown";
+
   const feedbackPrompt = `The previous attempt to "${instruction}" was incomplete.
 
-Issues to address:
+File to edit: ${primaryFile}
+
+Remaining issues:
 ${suggestions.map((s) => `- ${s}`).join("\n")}
 
-Current file state:
+Current file content:
 ${Array.from(snapshots.entries())
-  .map(
-    ([path, snap]) =>
-      `File: ${path}\n\`\`\`\n${snap.afterContent.slice(0, 1500)}\n\`\`\``,
-  )
+  .map(([path, snap]) => `\`\`\`\n${snap.afterContent.slice(0, 2000)}\n\`\`\``)
   .join("\n\n")}
 
-Generate SPECIFIC steps to complete the remaining work. Focus ONLY on what's still needed.
-Use format:
-1. EDIT_FILE: path/to/file - description of specific change
-2. EDIT_FILE: path/to/file - another specific change
+Generate steps to FIX THE REMAINING ISSUES in the file above.
 
-Output ONLY the numbered steps:`;
+IMPORTANT FORMAT - use EXACTLY this format:
+1. EDIT_FILE: ${primaryFile} | specific change description
+2. EDIT_FILE: ${primaryFile} | another specific change
+
+Rules:
+- Use the EXACT file path: ${primaryFile}
+- Separate path and description with | (pipe character)
+- Focus on fixing the remaining issues listed above
+- Do NOT include the description in the file path
+
+Output ONLY numbered steps:`;
 
   let response = "";
   for await (const chunk of model.streamComplete(feedbackPrompt)) {
     response += chunk;
   }
 
-  return parseSimplePlanSteps(response);
+  const steps = parseSimplePlanSteps(response);
+
+  // Validate and fix any malformed targets
+  for (const step of steps) {
+    if (step.target && step.target.includes(" ")) {
+      // Target has spaces - likely includes description, use primary file
+      step.target = primaryFile;
+    }
+  }
+
+  return steps;
 }
 
 // ============================================================================
@@ -1029,6 +1071,13 @@ async function* handleInsertCode(
 ): AsyncGenerator<string> {
   if (!step.target || !step.codeBlock) {
     yield "⚠️ Missing target or code block\n";
+    return;
+  }
+
+  // Validate target is a valid file path (not a description)
+  if (step.target.includes(" - ") || step.target.length > 200) {
+    yield `⚠️ Invalid target path detected: "${step.target.slice(0, 50)}..."\n`;
+    yield `_This appears to be a malformed path. Skipping step._\n`;
     return;
   }
 
@@ -1213,6 +1262,13 @@ async function* handleEditFile(
     return;
   }
 
+  // Validate target is a valid file path (not a description)
+  if (step.target.includes(" - ") || step.target.length > 200) {
+    yield `⚠️ Invalid target path detected: "${step.target.slice(0, 50)}..."\n`;
+    yield `_This appears to be a malformed path. Skipping step._\n`;
+    return;
+  }
+
   const filePath = rootDir + "/" + step.target;
 
   let existingContent: string;
@@ -1238,7 +1294,31 @@ async function* handleEditFile(
     ? `\nReference code (use this as guidance for the changes):\n\`\`\`\n${step.codeBlock}\n\`\`\`\n`
     : "";
 
-  const prompt = `Edit this file based on the instruction.
+  // Detect if this is a refactoring task that needs complete rewrite
+  const isRefactorTask = step.description
+    .toLowerCase()
+    .match(/refactor|convert|rewrite|transform|callback.*async|async.*await/);
+
+  const prompt = isRefactorTask
+    ? `Completely refactor this file based on the instruction.
+
+File: ${step.target}
+Instruction: ${step.description}
+${codeBlockSection}
+Current file content:
+\`\`\`
+${existingContent}
+\`\`\`
+
+IMPORTANT:
+1. Output the COMPLETE refactored file
+2. Apply the changes to ALL relevant code (not just the first occurrence)
+3. Maintain consistent style throughout
+4. Include all imports, functions, and exports
+5. Do NOT leave any code in the old style
+
+Output ONLY the complete refactored code, no explanations:`
+    : `Edit this file based on the instruction.
 
 File: ${step.target}
 Instruction: ${step.description}

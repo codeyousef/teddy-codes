@@ -2,6 +2,7 @@
 
 const fs = require("fs");
 const https = require("https");
+const fsPromises = require("fs").promises;
 
 // Helper function to wrap https.get in a Promise
 function httpsGet(url) {
@@ -30,68 +31,37 @@ function httpsGet(url) {
 }
 
 // BUG: Deeply nested callbacks - "Pyramid of Doom"
-function processUserData(userId, callback) {
+async function processUserData(userId, callback) {
   try {
     // Level 1: Fetch user
-    https.get(`https://api.example.com/users/${userId}`, (userRes) => {
-      let userData = "";
-      userRes.on("data", (chunk) => {
-        userData += chunk;
-      });
-      userRes.on("end", () => {
-        const user = JSON.parse(userData);
+    const user = await httpsGet(`https://api.example.com/users/${userId}`);
 
-        // Level 2: Fetch user's orders
-        https.get(
-          `https://api.example.com/users/${userId}/orders`,
-          (ordersRes) => {
-            let ordersData = "";
-            ordersRes.on("data", (chunk) => {
-              ordersData += chunk;
-            });
-            ordersRes.on("end", async () => {
-              const orders = JSON.parse(ordersData);
+    // Level 2: Fetch user's orders
+    const orders = await httpsGet(
+      `https://api.example.com/users/${userId}/orders`,
+    );
 
-              // Level 3: Fetch details for each order in parallel
-              const orderDetails = await Promise.all(
-                orders.map((order) =>
-                  httpsGet(`https://api.example.com/orders/${order.id}`),
-                ),
-              );
+    // Level 3: Fetch details for each order in parallel
+    const orderDetails = await Promise.all(
+      orders.map((order) =>
+        httpsGet(`https://api.example.com/orders/${order.id}`),
+      ),
+    );
 
-              // Level 4: When all done, save to file
-              const result = {
-                user: user,
-                orders: orderDetails,
-              };
+    // Level 4: When all done, save to file
+    const result = {
+      user: user,
+      orders: orderDetails,
+    };
 
-              fs.writeFile(
-                `user_${userId}_data.json`,
-                JSON.stringify(result, null, 2),
-                (writeErr) => {
-                  if (writeErr) {
-                    callback(writeErr, null);
-                  } else {
-                    // Level 5: Read it back to verify
-                    fs.readFile(
-                      `user_${userId}_data.json`,
-                      "utf8",
-                      (readErr, data) => {
-                        if (readErr) {
-                          callback(readErr, null);
-                        } else {
-                          callback(null, JSON.parse(data));
-                        }
-                      },
-                    );
-                  }
-                },
-              );
-            });
-          },
-        );
-      });
-    });
+    await fsPromises.writeFile(
+      `user_${userId}_data.json`,
+      JSON.stringify(result, null, 2),
+    );
+
+    // Level 5: Read it back to verify
+    const data = await fsPromises.readFile(`user_${userId}_data.json`, "utf8");
+    callback(null, JSON.parse(data));
   } catch (error) {
     callback(error, null);
   }
@@ -144,25 +114,16 @@ function verifySetup(connection, callback) {
 }
 
 // Usage example:
-// Using .catch() for error handling
-processUserData(123, (err, data) => {
-  if (err) {
-    console.error("Error processing user data:", err);
-  } else {
-    console.log("User data processed successfully:", data);
-  }
-});
-
-// Or if processUserData is refactored to async/await, use try-catch:
-/*
-async function main() {
+(async () => {
   try {
-    const data = await processUserData(123);
-    console.log('User data processed successfully:', data);
-  } catch (err) {
-    console.error('Error processing user data:', err);
+    processUserData(123, (error, result) => {
+      if (error) {
+        console.error("Error processing user data:", error);
+      } else {
+        console.log("User data processed successfully:", result);
+      }
+    });
+  } catch (error) {
+    console.error("Unexpected error:", error);
   }
-}
-
-main();
-*/
+})();

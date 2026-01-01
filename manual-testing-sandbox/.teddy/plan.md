@@ -1,13 +1,13 @@
-1. EDIT_FILE: 01-bugs-to-fix/javascript/callback-hell.js | Create httpsGet() Promise wrapper helper function at the top of the file to replace callback-based https.get with Promise-based implementation including proper error handling
+1. EDIT_FILE: 01-bugs-to-fix/javascript/callback-hell.js | Add fs.promises import at the top of the file after existing require statements
 
-2. EDIT_FILE: 01-bugs-to-fix/javascript/callback-hell.js | Convert processUserData() function to async/await: change signature to async function, remove callback parameter, replace nested https.get callbacks with await httpsGet() calls
+2. EDIT_FILE: 01-bugs-to-fix/javascript/callback-hell.js | Convert processUserData function signature from callback-based to async/await (make it async function without callback parameter)
 
-3. EDIT_FILE: 01-bugs-to-fix/javascript/callback-hell.js | Replace sequential order details fetching with Promise.all() to fetch all order details in parallel using orders.map() with await httpsGet()
+3. EDIT_FILE: 01-bugs-to-fix/javascript/callback-hell.js | Replace first nested https.get callback with await httpsGet() helper and linear async/await flow
 
-4. EDIT_FILE: 01-bugs-to-fix/javascript/callback-hell.js | Convert fs.writeFile and fs.readFile operations to use fs.promises API with await instead of callbacks
+4. EDIT_FILE: 01-bugs-to-fix/javascript/callback-hell.js | Replace fs.writeFile callback with await fsPromises.writeFile() and remove nesting
 
-5. EDIT_FILE: 01-bugs-to-fix/javascript/callback-hell.js | Add centralized try-catch error handling block wrapping entire processUserData() function body to replace scattered error callbacks
+5. EDIT_FILE: 01-bugs-to-fix/javascript/callback-hell.js | Replace second https.get and fs.readFile callbacks with await httpsGet() and await fsPromises.readFile(), replace callback returns with throw/return statements
 
-6. EDIT_FILE: 01-bugs-to-fix/javascript/callback-hell.js | Complete or remove the incomplete initializeDatabase() function - convert to async/await pattern if keeping, or remove entirely if not needed
+6. EDIT_FILE: 01-bugs-to-fix/javascript/callback-hell.js | Remove try-catch wrapper around processUserData logic, and complete or remove the incomplete initializeDatabase function
 
-7. EDIT_FILE: 01-bugs-to-fix/javascript/callback-hell.js | Add usage example at bottom demonstrating how to call refactored async processUserData() function with proper error handling using .catch() or try-catch in async context
+7. EDIT_FILE: 01-bugs-to-fix/javascript/callback-hell.js | Update usage example at bottom to show proper async/await invocation with IIFE and try-catch block

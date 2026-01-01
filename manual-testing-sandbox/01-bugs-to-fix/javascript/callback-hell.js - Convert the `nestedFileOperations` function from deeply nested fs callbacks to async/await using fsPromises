@@ -1,0 +1,18 @@
+const fs = require('fs').promises;
+
+async function nestedFileOperations(inputPath, outputPath) {
+  try {
+    const data = await fs.readFile(inputPath, 'utf8');
+    const processed = data.toUpperCase();
+    await fs.writeFile(outputPath, processed);
+    const verification = await fs.readFile(outputPath, 'utf8');
+    console.log('Operation completed successfully');
+    console.log('Verified content:', verification);
+    return verification;
+  } catch (error) {
+    console.error('Error during file operations:', error);
+    throw error;
+  }
+}
+
+module.exports = { nestedFileOperations };

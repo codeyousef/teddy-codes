@@ -1,0 +1,28 @@
+const fs = require('fs').promises;
+
+async function processUserData(userId) {
+  try {
+    // Read user data
+    const userData = await fs.readFile(`users/${userId}.json`, 'utf8');
+    const user = JSON.parse(userData);
+    
+    // Process user data
+    user.lastAccessed = new Date().toISOString();
+    user.accessCount = (user.accessCount || 0) + 1;
+    
+    // Write updated data
+    await fs.writeFile(`users/${userId}.json`, JSON.stringify(user, null, 2));
+    
+    // Read back to verify
+    const verifyData = await fs.readFile(`users/${userId}.json`, 'utf8');
+    const verifiedUser = JSON.parse(verifyData);
+    
+    console.log('User data processed successfully:', verifiedUser);
+    return verifiedUser;
+  } catch (error) {
+    console.error('Error processing user data:', error);
+    throw error;
+  }
+}
+
+module.exports = { processUserData };

@@ -1,46 +1,53 @@
-## Fix/Edit Spec for callback-hell.js
+# Fix Spec: callback-hell.js
 
-### 1. Goal
+## Goal
 
-Refactor deeply nested callbacks (callback hell/pyramid of doom) to modern async/await syntax for better readability and maintainability.
+Refactor deeply nested callbacks to async/await pattern to eliminate callback hell and fix error handling inconsistencies.
 
-### 2. Issues Found
+## Issues Found
 
-- **Callback Hell (5+ levels deep)**: Deeply nested callbacks in `processUserData()` making code unreadable and hard to maintain
-- **Error handling scattered**: Error handling is inconsistent and spread across multiple callback levels
-- **Incomplete function**: `initializeDatabase()` function is cut off/incomplete
-- **No error handling on HTTPS requests**: Missing error handlers for network requests
-- **Race condition potential**: `orderDetails` array population relies on index ordering but async completion order isn't guaranteed
-- **Manual Promise wrapping needed**: Using callback-based APIs that need modernization
+1. **Callback hell/Pyramid of Doom**: Multiple levels of nested callbacks in `processUserData` making code hard to read and maintain
+2. **Inconsistent async/await usage**: Mixing callbacks with `async/await` (line 56 uses `await` inside callback-based code)
+3. **Incomplete function**: `initializeDatabase` function is truncated/incomplete
+4. **Poor error handling**: Try-catch wrapping callbacks won't catch async errors; missing error handlers on https.get requests in nested callbacks
+5. **Code duplication**: Repeated pattern of https.get with data chunking that could use the existing `httpsGet` helper
 
-### 3. Files to Edit
+## Files to Edit
 
 - `01-bugs-to-fix/javascript/callback-hell.js`
 
-### 4. Changes Required
+## Changes Required
 
-**For `callback-hell.js`:**
+### 1. Refactor `processUserData` to async/await
 
-1. **Convert HTTPS requests to Promises**: Create helper function `httpsGet(url)` that returns a Promise wrapping the https.get callback pattern with proper error handling
+- Convert function signature from `function processUserData(userId, callback)` to `async function processUserData(userId)`
+- Replace nested `https.get` callbacks with `httpsGet` helper function and `await`
+- Replace `fs.writeFile` callback with `fs.promises.writeFile` and `await`
+- Replace `fs.readFile` callback with `fs.promises.readFile` and `await`
+- Remove all callback nesting - make sequential operations linear with await
+- Replace `callback(error, null)` returns with `throw error`
+- Replace `callback(null, result)` with `return result`
+- Remove the try-catch wrapper (let async errors propagate naturally)
 
-2. **Convert fs operations to Promises**: Use `fs.promises` API or create Promise wrappers for `fs.writeFile` and `fs.readFile`
+### 2. Fix fs module import
 
-3. **Refactor `processUserData()` to async/await**:
+- Add `const fsPromises = require('fs').promises;` or use `fs/promises` for promise-based file operations
 
-   - Change function signature to `async function processUserData(userId)`
-   - Remove callback parameter, return Promise instead
-   - Use `await httpsGet()` for user data fetch
-   - Use `await httpsGet()` for orders data fetch
-   - Use `Promise.all()` with `orders.map()` to fetch all order details in parallel
-   - Use `await fs.promises.writeFile()` for saving file
-   - Use `await fs.promises.readFile()` for reading file back
-   - Wrap entire function body in try-catch for centralized error handling
+### 3. Complete or remove `initializeDatabase` function
 
-4. **Complete/fix `initializeDatabase()` function**:
+- Either implement it fully using async/await pattern, or remove it entirely as it's incomplete
+- If implementing, convert to: `async function initializeDatabase(config)` with proper await calls
 
-   - Either complete the function with async/await pattern or remove it as it's incomplete
-   - If completing: convert to async/await with proper Promise-based database connection
+### 4. Add usage example
 
-5. **Add proper error handling**: Wrap async operations in try-catch blocks and propagate errors appropriately
-
-6. **Add usage example**: Include example at bottom showing how to call the refactored async functions with `.then()/.catch()` or in an async context
+- Update or add example usage showing async/await invocation with try-catch:
+  ```javascript
+  (async () => {
+    try {
+      const result = await processUserData(123);
+      console.log(result);
+    } catch (error) {
+      console.error(error);
+    }
+  })();
+  ```
