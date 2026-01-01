@@ -10,7 +10,7 @@ export {
   CLOUD_PROVIDERS,
   FileCache,
   LOCAL_PROVIDERS,
-  ModelCapabilities,
+  type ModelCapabilities,
   applyCachingConfig,
   getContentLimit,
   getModelCapabilities,

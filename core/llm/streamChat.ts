@@ -15,6 +15,7 @@ import { autonomousMode } from "../modes/autonomous";
 import { tddMode } from "../modes/tdd";
 import { FromCoreProtocol, ToCoreProtocol } from "../protocol";
 import { IMessenger, Message } from "../protocol/messenger";
+import { SkillService } from "../skills/SkillService";
 import { callTool } from "../tools/callTool";
 import { Telemetry } from "../util/posthog";
 import { TTS } from "../util/tts";
@@ -84,6 +85,16 @@ export async function* llmStreamChat(
   } = msg.data;
 
   let messages = [...originalMessages];
+
+  const skillSnippet =
+    await SkillService.getInstance().getSystemPromptSnippet(ide);
+  if (skillSnippet) {
+    if (messages.length > 0 && messages[0].role === "system") {
+      messages[0].content += skillSnippet;
+    } else {
+      messages.unshift({ role: "system", content: skillSnippet });
+    }
+  }
 
   const model = config.selectedModelByRole.chat;
 

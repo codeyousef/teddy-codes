@@ -15,6 +15,7 @@ export enum BuiltInToolNames {
   CreateRuleBlock = "create_rule_block",
   RequestRule = "request_rule",
   FetchUrlContent = "fetch_url_content",
+  ActivateSkill = "activate_skill",
   CodebaseTool = "codebase",
 
   // excluded from allTools for now
