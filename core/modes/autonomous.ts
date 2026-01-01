@@ -8,7 +8,7 @@ import {
 } from "./verification/index.js";
 
 // Verification settings
-const MAX_VERIFICATION_ATTEMPTS = 3;
+const MAX_VERIFICATION_ATTEMPTS = 10; // High limit as safety valve, not primary stopping condition
 const VERIFICATION_ENABLED = true;
 
 interface PlanStep {
@@ -783,12 +783,14 @@ async function* executeStepsWithVerification(
   let attempt = 0;
   let verificationPassed = false;
   const previousResults: any[] = [];
+  let lastFailedCount = Infinity;
+  let stuckCount = 0; // Track how many times we've made no progress
 
   while (attempt < MAX_VERIFICATION_ATTEMPTS && !verificationPassed) {
     attempt++;
 
     if (attempt > 1) {
-      yield `\n🔄 **Retry ${attempt}/${MAX_VERIFICATION_ATTEMPTS}** - fixing remaining issues...\n\n`;
+      yield `\n🔄 **Retry ${attempt}** - fixing remaining issues...\n\n`;
     }
 
     // Execute the steps
@@ -835,11 +837,24 @@ async function* executeStepsWithVerification(
       verificationPassed = true;
       yield "\n✅ **Verified complete!**\n";
     } else {
-      // Show issues in collapsible section
+      // Track progress - are we making improvements?
       const failedCriteria = result.criteriaResults.filter((c) => !c.passed);
-      yield `\n⚠️ ${failedCriteria.length} issue(s) found`;
+      const currentFailedCount = failedCriteria.length;
 
-      if (attempt < MAX_VERIFICATION_ATTEMPTS) {
+      if (currentFailedCount >= lastFailedCount) {
+        stuckCount++;
+      } else {
+        stuckCount = 0; // Reset if we made progress
+      }
+      lastFailedCount = currentFailedCount;
+
+      yield `\n⚠️ ${currentFailedCount} issue(s) remaining`;
+
+      // Stop if: hit max attempts OR stuck for 2 consecutive attempts with no progress
+      const shouldStop =
+        attempt >= MAX_VERIFICATION_ATTEMPTS || stuckCount >= 2;
+
+      if (!shouldStop) {
         yield ` - retrying...\n`;
         // Regenerate steps with feedback for next iteration
         steps = await regenerateStepsWithFeedback(
@@ -854,6 +869,7 @@ async function* executeStepsWithVerification(
           yield `- ${criterion.name}: ${criterion.explanation}\n`;
         }
         yield `\n</details>\n`;
+        break; // Exit the while loop
       }
     }
   }
