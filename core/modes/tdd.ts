@@ -224,6 +224,18 @@ export async function* tddMode(
     return;
   }
 
+  // If user typed a continue command but there's no previous state, show help
+  if (isContinuation) {
+    yield "🧪 **TDD Mode**\n\n";
+    yield "⚠️ **No previous TDD cycle found to continue.**\n\n";
+    yield "To start a TDD cycle, describe what you want to implement. For example:\n";
+    yield '- "Implement a function that validates email addresses"\n';
+    yield '- "Create a user authentication module"\n';
+    yield '- "Build a shopping cart with add/remove functionality"\n\n';
+    yield '_Tip: After starting a cycle, you can say "continue" to proceed through phases._\n';
+    return;
+  }
+
   // New TDD cycle
   yield "🧪 **TDD Mode - Red-Green-Refactor Cycle**\n\n";
 
