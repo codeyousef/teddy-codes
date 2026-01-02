@@ -368,6 +368,17 @@ Respond with ONLY the raw test code. Do not use markdown code blocks.`;
   // Suggest test file location
   const testFilename = suggestTestFilename(userRequest, testFramework);
   yield `💡 **Suggested file:** \`${testFilename}\`\n\n`;
+
+  // Actually write the test file
+  const cleanTestCode = stripCodeBlock(testCode);
+  const fullTestPath = rootPath + "/" + testFilename;
+  try {
+    await ide.writeFile(fullTestPath, cleanTestCode);
+    yield `✅ **Created:** \`${testFilename}\`\n\n`;
+  } catch (err) {
+    yield `⚠️ _Could not create file: ${err}_\n\n`;
+  }
+
   yield `⚡ _Run \`${testFramework.command}\` to verify the test fails._\n\n`;
 
   yield "</details>\n\n";
@@ -440,6 +451,17 @@ Respond with ONLY the raw implementation code. Do not use markdown code blocks.`
     } else {
       yield "\n\n";
     }
+  }
+
+  // Write the implementation file
+  const implFilename = suggestImplFilename(userRequest, testFramework);
+  const cleanImplCode = stripCodeBlock(implCode);
+  const fullImplPath = rootPath + "/" + implFilename;
+  try {
+    await ide.writeFile(fullImplPath, cleanImplCode);
+    yield `✅ **Created:** \`${implFilename}\`\n\n`;
+  } catch (err) {
+    yield `⚠️ _Could not create file: ${err}_\n\n`;
   }
 
   yield `⚡ _Run \`${testFramework.command}\` to verify the test passes._\n\n`;
@@ -855,6 +877,39 @@ function suggestTestFilename(
       return `${baseName.replace(/-/g, "_")}_test.go`;
     default:
       return `__tests__/${baseName}.test.ts`;
+  }
+}
+
+/**
+ * Suggest an implementation filename based on the requirement
+ */
+function suggestImplFilename(
+  requirement: string,
+  framework: TestFramework,
+): string {
+  // Clean requirement of code blocks and special chars
+  const cleanRequirement = requirement
+    .replace(/```[\s\S]*?```/g, "") // Remove code blocks
+    .replace(/[^a-zA-Z0-9\s]/g, " "); // Keep only text
+
+  // Extract key words from requirement
+  const words = cleanRequirement
+    .toLowerCase()
+    .split(/\s+/)
+    .filter((w) => w.length > 3)
+    .slice(0, 2);
+
+  const baseName = words.join("-") || "feature";
+
+  switch (framework.language) {
+    case "python":
+      return `src/${baseName.replace(/-/g, "_")}.py`;
+    case "rust":
+      return `src/${baseName.replace(/-/g, "_")}.rs`;
+    case "go":
+      return `${baseName.replace(/-/g, "_")}.go`;
+    default:
+      return `src/${baseName}.ts`;
   }
 }
 
