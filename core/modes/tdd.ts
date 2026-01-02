@@ -14,6 +14,157 @@ interface TestResult {
   failures: string[];
 }
 
+/** TDD Phase states */
+type TDDPhase = "red" | "green" | "refactor" | "complete";
+
+/** State extracted from conversation history */
+interface TDDState {
+  phase: TDDPhase;
+  requirement: string;
+  testCode: string;
+  implCode: string;
+  framework: TestFramework | null;
+}
+
+/** Commands that trigger phase continuation */
+const CONTINUE_COMMANDS = [
+  "continue",
+  "continnue", // Common typo
+  "next",
+  "proceed",
+  "go",
+  "go on",
+  "skip",
+  "done",
+  "ok",
+  "yes",
+  "y",
+];
+
+/**
+ * Check if user input is a continuation command
+ */
+function isContinueCommand(input: string): boolean {
+  const normalized = input.trim().toLowerCase();
+  return CONTINUE_COMMANDS.includes(normalized) || normalized.length <= 3;
+}
+
+/**
+ * Extract TDD state from conversation history
+ */
+function extractTDDState(messages: ChatMessage[]): TDDState {
+  const state: TDDState = {
+    phase: "red",
+    requirement: "",
+    testCode: "",
+    implCode: "",
+    framework: null,
+  };
+
+  // Look through assistant messages for TDD markers
+  for (const msg of messages) {
+    if (msg.role !== "assistant") continue;
+    const content =
+      typeof msg.content === "string"
+        ? msg.content
+        : JSON.stringify(msg.content);
+
+    // Check for requirement
+    const reqMatch = content.match(/_Requirement: "([^"]+)"/);
+    if (reqMatch && reqMatch[1] && !reqMatch[1].includes("...")) {
+      state.requirement = reqMatch[1];
+    }
+
+    // Check for framework
+    const fwMatch = content.match(/📋 \*\*Framework:\*\* ([^\n]+)/);
+    if (fwMatch) {
+      const fwName = fwMatch[1].trim();
+      state.framework = inferFrameworkFromName(fwName);
+    }
+
+    // Check phases and extract code
+    if (content.includes("🔴 **Phase 1: RED**")) {
+      // Extract test code from RED phase
+      const testMatch = content.match(
+        /🔴 \*\*Phase 1: RED\*\*[\s\S]*?```[\w-]*\n([\s\S]*?)```/,
+      );
+      if (testMatch) {
+        state.testCode = testMatch[1].trim();
+      }
+
+      // Determine current phase based on what's complete
+      if (content.includes("🟢 **Phase 2: GREEN**")) {
+        const implMatch = content.match(
+          /🟢 \*\*Phase 2: GREEN\*\*[\s\S]*?```[\w-]*\n([\s\S]*?)```/,
+        );
+        if (implMatch) {
+          state.implCode = implMatch[1].trim();
+        }
+
+        if (content.includes("🔵 **Phase 3: REFACTOR**")) {
+          if (content.includes("✅ **TDD Cycle Complete!**")) {
+            state.phase = "complete";
+          } else {
+            state.phase = "refactor";
+          }
+        } else {
+          state.phase = "refactor";
+        }
+      } else {
+        state.phase = "green";
+      }
+    }
+  }
+
+  return state;
+}
+
+/**
+ * Infer framework details from name
+ */
+function inferFrameworkFromName(name: string): TestFramework {
+  const lowerName = name.toLowerCase();
+  if (lowerName.includes("cargo") || lowerName.includes("rust")) {
+    return {
+      name: "cargo test",
+      command: "cargo test",
+      language: "rust",
+      testPattern: "*_test.rs",
+    };
+  }
+  if (lowerName.includes("pytest") || lowerName.includes("python")) {
+    return {
+      name: "pytest",
+      command: "pytest",
+      language: "python",
+      testPattern: "test_*.py",
+    };
+  }
+  if (lowerName.includes("go test") || lowerName.includes("golang")) {
+    return {
+      name: "go test",
+      command: "go test ./...",
+      language: "go",
+      testPattern: "*_test.go",
+    };
+  }
+  if (lowerName.includes("vitest")) {
+    return {
+      name: "Vitest",
+      command: "npx vitest",
+      language: "typescript",
+      testPattern: "*.test.ts",
+    };
+  }
+  // Default to Jest
+  return {
+    name: "Jest",
+    command: "npm test",
+    language: "typescript",
+    testPattern: "*.test.ts",
+  };
+}
+
 /**
  * TDD Mode - Red-Green-Refactor cycle
  *
@@ -21,6 +172,8 @@ interface TestResult {
  * 1. RED: Write a failing test first
  * 2. GREEN: Implement minimal code to pass the test
  * 3. REFACTOR: Clean up while keeping tests green
+ *
+ * Supports continuation commands like "continue", "next", etc.
  */
 export async function* tddMode(
   configHandler: ConfigHandler,
@@ -28,8 +181,6 @@ export async function* tddMode(
   messages: ChatMessage[],
   model: any, // ILLM
 ): AsyncGenerator<string> {
-  yield "🧪 **TDD Mode - Red-Green-Refactor Cycle**\n\n";
-
   // Apply cost-saving configurations
   const capabilities = getModelCapabilities(model);
   applyCachingConfig(model);
@@ -37,16 +188,38 @@ export async function* tddMode(
   // Initialize file cache for this session
   const fileCache = new FileCache();
 
-  // Show model info (consistent with autonomous mode)
-  const providerInfo = capabilities.isCloud ? "☁️ Cloud" : "🖥️ Local";
-  const cachingInfo = capabilities.supportsCaching ? " | 💾 Caching" : "";
-  yield `_Model: ${model.model || "unknown"} | ${providerInfo}${cachingInfo}_\n\n`;
-
   const lastMessage = messages[messages.length - 1];
   const userRequest =
     typeof lastMessage.content === "string"
       ? lastMessage.content
       : "No request found";
+
+  // Check if this is a continuation command
+  const isContinuation = isContinueCommand(userRequest);
+
+  // Extract state from previous messages
+  const previousState = extractTDDState(messages.slice(0, -1));
+
+  // Determine what to do
+  if (isContinuation && previousState.requirement) {
+    // User wants to continue from previous state
+    yield* handleContinuation(
+      model,
+      capabilities,
+      previousState,
+      ide,
+      fileCache,
+    );
+    return;
+  }
+
+  // New TDD cycle
+  yield "🧪 **TDD Mode - Red-Green-Refactor Cycle**\n\n";
+
+  // Show model info (consistent with autonomous mode)
+  const providerInfo = capabilities.isCloud ? "☁️ Cloud" : "🖥️ Local";
+  const cachingInfo = capabilities.supportsCaching ? " | 💾 Caching" : "";
+  yield `_Model: ${model.model || "unknown"} | ${providerInfo}${cachingInfo}_\n\n`;
 
   // Show requirement
   const truncatedRequest =
@@ -244,6 +417,143 @@ Be concise.`;
   yield "\n\n";
 
   yield "</details>\n\n";
+
+  yield "---\n\n";
+  yield "✅ **TDD Cycle Complete!**\n\n";
+  yield "📋 **Next steps:**\n";
+  yield "1. Run tests to verify everything passes\n";
+  yield "2. Apply suggested refactoring\n";
+  yield "3. Re-run tests after each change\n";
+  yield "4. Repeat the cycle for additional requirements\n";
+}
+
+/**
+ * Handle continuation from a previous TDD state
+ */
+async function* handleContinuation(
+  model: any,
+  capabilities: any,
+  state: TDDState,
+  ide: IDE,
+  fileCache: FileCache,
+): AsyncGenerator<string> {
+  const framework = state.framework || {
+    name: "Jest",
+    command: "npm test",
+    language: "typescript",
+    testPattern: "*.test.ts",
+  };
+
+  yield "🧪 **TDD Mode - Continuing...**\n\n";
+
+  const providerInfo = capabilities.isCloud ? "☁️ Cloud" : "🖥️ Local";
+  const cachingInfo = capabilities.supportsCaching ? " | 💾 Caching" : "";
+  yield `_Model: ${model.model || "unknown"} | ${providerInfo}${cachingInfo}_\n\n`;
+
+  yield `_Requirement: "${state.requirement}"_\n`;
+  yield `_Resuming from: **${state.phase.toUpperCase()}** phase_\n\n`;
+
+  const contextLimit = getContentLimit(capabilities, "context");
+
+  if (state.phase === "green") {
+    // Continue to GREEN phase
+    yield "<details>\n<summary>🟢 **Phase 2: GREEN** - Implementing minimal code...</summary>\n\n";
+
+    const truncatedTestCode = truncateContent(state.testCode, contextLimit);
+
+    const implPrompt = `Write the MINIMAL implementation code to make this test pass. No extra features, just enough to pass the test.
+
+Test code:
+\`\`\`${framework.language}
+${truncatedTestCode}
+\`\`\`
+
+Guidelines:
+1. Keep it simple - minimal code only
+2. Don't anticipate future requirements
+3. Focus on making the test green
+
+Respond with ONLY the raw implementation code. Do not use markdown code blocks.`;
+
+    let implCode = "";
+    yield "```" + framework.language + "\n";
+    for await (const chunk of model.streamComplete(implPrompt)) {
+      const cleanChunk = stripCodeBlock(chunk);
+      implCode += cleanChunk;
+      yield cleanChunk;
+    }
+    yield "\n```\n\n";
+
+    yield `⚡ _Run \`${framework.command}\` to verify the test passes._\n\n`;
+    yield "</details>\n\n";
+
+    // Continue to REFACTOR
+    yield "<details>\n<summary>🔵 **Phase 3: REFACTOR** - Suggesting improvements...</summary>\n\n";
+
+    const truncatedImplCode = truncateContent(implCode, contextLimit);
+
+    const refactorPrompt = `Review this implementation and suggest refactoring improvements while keeping tests passing.
+
+Test:
+\`\`\`${framework.language}
+${truncatedTestCode}
+\`\`\`
+
+Implementation:
+\`\`\`${framework.language}
+${truncatedImplCode}
+\`\`\`
+
+Suggest improvements for:
+1. Code clarity
+2. Naming
+3. Duplication removal
+4. Design patterns (if applicable)
+
+Be concise.`;
+
+    for await (const chunk of model.streamComplete(refactorPrompt)) {
+      yield chunk;
+    }
+    yield "\n\n";
+    yield "</details>\n\n";
+  } else if (state.phase === "refactor") {
+    // Continue to REFACTOR phase only
+    yield "<details>\n<summary>🔵 **Phase 3: REFACTOR** - Suggesting improvements...</summary>\n\n";
+
+    const truncatedTestCode = truncateContent(state.testCode, contextLimit);
+    const truncatedImplCode = truncateContent(state.implCode, contextLimit);
+
+    const refactorPrompt = `Review this implementation and suggest refactoring improvements while keeping tests passing.
+
+Test:
+\`\`\`${framework.language}
+${truncatedTestCode}
+\`\`\`
+
+Implementation:
+\`\`\`${framework.language}
+${truncatedImplCode}
+\`\`\`
+
+Suggest improvements for:
+1. Code clarity
+2. Naming
+3. Duplication removal
+4. Design patterns (if applicable)
+
+Be concise.`;
+
+    for await (const chunk of model.streamComplete(refactorPrompt)) {
+      yield chunk;
+    }
+    yield "\n\n";
+    yield "</details>\n\n";
+  } else if (state.phase === "complete") {
+    yield "✅ The previous TDD cycle is already complete!\n\n";
+    yield "To start a new cycle, describe your next requirement.\n";
+    return;
+  }
 
   yield "---\n\n";
   yield "✅ **TDD Cycle Complete!**\n\n";
