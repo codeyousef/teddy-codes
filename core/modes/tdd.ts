@@ -83,12 +83,50 @@ Guidelines:
 Respond with ONLY the raw test code. Do not use markdown code blocks.`;
 
   let testCode = "";
-  yield "```" + testFramework.language + "\n";
+  let buffer = "";
+  let determined = false;
+  let isCodeBlock = false;
+
   for await (const chunk of model.streamComplete(testPrompt)) {
     testCode += chunk;
-    yield chunk;
+    if (!determined) {
+      buffer += chunk;
+      const trimmed = buffer.trimStart();
+      if (trimmed.startsWith("```")) {
+        isCodeBlock = true;
+        determined = true;
+        yield buffer;
+        buffer = "";
+      } else if (
+        trimmed.length >= 3 ||
+        (trimmed.length > 0 && !trimmed.startsWith("`"))
+      ) {
+        isCodeBlock = false;
+        determined = true;
+        yield "```" + testFramework.language + "\n";
+        yield buffer;
+        buffer = "";
+      }
+    } else {
+      yield chunk;
+    }
   }
-  yield "\n```\n\n";
+
+  if (!determined) {
+    if (buffer.trimStart().startsWith("```")) {
+      yield buffer;
+    } else {
+      yield "```" + testFramework.language + "\n";
+      yield buffer;
+      yield "\n```\n\n";
+    }
+  } else {
+    if (!isCodeBlock) {
+      yield "\n```\n\n";
+    } else {
+      yield "\n\n";
+    }
+  }
 
   // Suggest test file location
   const testFilename = suggestTestFilename(userRequest, testFramework);
@@ -122,12 +160,50 @@ Guidelines:
 Respond with ONLY the raw implementation code. Do not use markdown code blocks.`;
 
   let implCode = "";
-  yield "```" + testFramework.language + "\n";
+  buffer = "";
+  determined = false;
+  isCodeBlock = false;
+
   for await (const chunk of model.streamComplete(implPrompt)) {
     implCode += chunk;
-    yield chunk;
+    if (!determined) {
+      buffer += chunk;
+      const trimmed = buffer.trimStart();
+      if (trimmed.startsWith("```")) {
+        isCodeBlock = true;
+        determined = true;
+        yield buffer;
+        buffer = "";
+      } else if (
+        trimmed.length >= 3 ||
+        (trimmed.length > 0 && !trimmed.startsWith("`"))
+      ) {
+        isCodeBlock = false;
+        determined = true;
+        yield "```" + testFramework.language + "\n";
+        yield buffer;
+        buffer = "";
+      }
+    } else {
+      yield chunk;
+    }
   }
-  yield "\n```\n\n";
+
+  if (!determined) {
+    if (buffer.trimStart().startsWith("```")) {
+      yield buffer;
+    } else {
+      yield "```" + testFramework.language + "\n";
+      yield buffer;
+      yield "\n```\n\n";
+    }
+  } else {
+    if (!isCodeBlock) {
+      yield "\n```\n\n";
+    } else {
+      yield "\n\n";
+    }
+  }
 
   yield `⚡ _Run \`${testFramework.command}\` to verify the test passes._\n\n`;
 
@@ -337,6 +413,33 @@ async function detectTestFramework(
         testPattern: "*_test.go",
       };
     }
+
+    // Try to infer from content
+    const content = currentFile.contents.toLowerCase();
+    if (content.includes("fn main") || content.includes("use std::")) {
+      return {
+        name: "cargo test",
+        command: "cargo test",
+        language: "rust",
+        testPattern: "*_test.rs",
+      };
+    }
+    if (content.includes("def ") || content.includes("import ")) {
+      return {
+        name: "pytest",
+        command: "pytest",
+        language: "python",
+        testPattern: "test_*.py",
+      };
+    }
+    if (content.includes("package main") || content.includes("func main")) {
+      return {
+        name: "go test",
+        command: "go test ./...",
+        language: "go",
+        testPattern: "*_test.go",
+      };
+    }
   }
 
   // Default to Jest
@@ -355,8 +458,13 @@ function suggestTestFilename(
   requirement: string,
   framework: TestFramework,
 ): string {
+  // Clean requirement of code blocks and special chars
+  const cleanRequirement = requirement
+    .replace(/```[\s\S]*?```/g, "") // Remove code blocks
+    .replace(/[^a-zA-Z0-9\s]/g, " "); // Keep only text
+
   // Extract key words from requirement
-  const words = requirement
+  const words = cleanRequirement
     .toLowerCase()
     .split(/\s+/)
     .filter((w) => w.length > 3)
