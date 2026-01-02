@@ -61,18 +61,26 @@ function extractTDDState(messages: ChatMessage[]): TDDState {
     framework: null,
   };
 
-  // Look through assistant messages for TDD markers
-  for (const msg of messages) {
+  // Look through assistant messages for TDD markers (in reverse to get latest)
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const msg = messages[i];
     if (msg.role !== "assistant") continue;
     const content =
       typeof msg.content === "string"
         ? msg.content
         : JSON.stringify(msg.content);
 
-    // Check for requirement
-    const reqMatch = content.match(/_Requirement: "([^"]+)"/);
-    if (reqMatch && reqMatch[1] && !reqMatch[1].includes("...")) {
-      state.requirement = reqMatch[1];
+    // Skip if this message doesn't look like a TDD output
+    if (!content.includes("🧪 **TDD Mode")) continue;
+
+    // Check for requirement - handle both truncated and non-truncated
+    const reqMatch = content.match(/_Requirement: "(.+?)(?:\.\.\.)?"/);
+    if (reqMatch && reqMatch[1]) {
+      // Don't use "continue" or other commands as the requirement
+      const req = reqMatch[1].trim();
+      if (!isContinueCommand(req)) {
+        state.requirement = req;
+      }
     }
 
     // Check for framework
@@ -112,6 +120,11 @@ function extractTDDState(messages: ChatMessage[]): TDDState {
         }
       } else {
         state.phase = "green";
+      }
+
+      // Found a valid TDD cycle, stop looking
+      if (state.requirement) {
+        break;
       }
     }
   }
